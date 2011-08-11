@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Elexis" uid="ch.elexis" id="ch.elexis.ElexisProduct" application="ch.elexis.ElexisApp" version="2.1.6" useFeatures="false" includeLaunchers="true">
+
+   <aboutInfo>
+      <image path="rsc/elexis48.gif"/>
+      <text>
+         Elexis - die Praxis.
+(c) 2005-2011 by G. Weirich and Elexis
+http://www.elexis.ch
+
+Informationen und Referenzinstallation:
+Gerry Weirich
+Rietstrasse 30
+8201 Schaffhausen
+      </text>
+   </aboutInfo>
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-nl de</programArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+   </launcherArgs>
+
+   <windowImages i16="rsc/elexis2_16.gif" i32="rsc/elexis32_2.gif" i48="rsc/elexis48.gif"/>
+
+   <splash
+      location="ch.elexis"
+      startupProgressRect="5,275,445,15" />
+   <launcher name="Elexis">
+      <solaris/>
+      <win useIco="true">
+         <ico path="/ch.elexis/rsc/elexis.ico"/>
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+      <plugin id="ch.elexis"/>
+      <plugin id="ch.elexis.agenda"/>
+      <plugin id="ch.elexis.artikel_ch"/>
+      <plugin id="ch.elexis.arzttarife_ch"/>
+      <plugin id="ch.elexis.befunde"/>
+      <plugin id="ch.elexis.buchhaltung.basis"/>
+      <plugin id="ch.elexis.connect.mythic"/>
+      <plugin id="ch.elexis.diagnosecodes_ch"/>
+      <plugin id="ch.elexis.ebanking_ch"/>
+      <plugin id="ch.elexis.elexis_help"/>
+      <plugin id="ch.elexis.icpc"/>
+      <plugin id="ch.elexis.impfplan"/>
+      <plugin id="ch.elexis.importer.div"/>
+      <plugin id="ch.elexis.importer.div_test" fragment="true"/>
+      <plugin id="ch.elexis.labortarif.ch2009"/>
+      <plugin id="ch.elexis.medikamente.bag"/>
+      <plugin id="ch.elexis.messages"/>
+      <plugin id="ch.elexis.mysql.connector"/>
+      <plugin id="ch.elexis.nl_en" fragment="true"/>
+      <plugin id="ch.elexis.scala.runtime"/>
+      <plugin id="ch.elexis.scripting.beanshell"/>
+      <plugin id="ch.elexis_test" fragment="true"/>
+      <plugin id="ch.medshare.base.external"/>
+      <plugin id="ch.medshare.ebm"/>
+      <plugin id="ch.rgw.utility"/>
+      <plugin id="ch.rgw.utility_test" fragment="true"/>
+      <plugin id="ch.unibe.iam.scg.archie"/>
+      <plugin id="ch.unibe.iam.scg.archie.samples" fragment="true"/>
+      <plugin id="com.hilotec.elexis.kgview"/>
+      <plugin id="com.hilotec.elexis.messwerte"/>
+      <plugin id="com.hilotec.elexis.opendocument"/>
+      <plugin id="com.hilotec.elexis.pluginstatistiken"/>
+      <plugin id="com.hilotec.elexis.toolbar"/>
+      <plugin id="com.ibm.icu"/>
+      <plugin id="javax.xml"/>
+      <plugin id="org.apache.commons.lang"/>
+      <plugin id="org.apache.commons.logging"/>
+      <plugin id="org.apache.lucene"/>
+      <plugin id="org.apache.lucene.analysis"/>
+      <plugin id="org.eclipse.core.commands"/>
+      <plugin id="org.eclipse.core.contenttype"/>
+      <plugin id="org.eclipse.core.databinding"/>
+      <plugin id="org.eclipse.core.databinding.observable"/>
+      <plugin id="org.eclipse.core.databinding.property"/>
+      <plugin id="org.eclipse.core.expressions"/>
+      <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
+      <plugin id="org.eclipse.equinox.app"/>
+      <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.preferences"/>
+      <plugin id="org.eclipse.equinox.registry"/>
+      <plugin id="org.eclipse.help"/>
+      <plugin id="org.eclipse.help.base"/>
+      <plugin id="org.eclipse.help.ui"/>
+      <plugin id="org.eclipse.jface"/>
+      <plugin id="org.eclipse.jface.databinding"/>
+      <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.ui"/>
+      <plugin id="org.eclipse.ui.forms"/>
+      <plugin id="org.eclipse.ui.workbench"/>
+      <plugin id="org.hamcrest.core"/>
+      <plugin id="org.junit"/>
+   </plugins>
+
+
+</product>
