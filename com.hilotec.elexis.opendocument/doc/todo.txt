@@ -1,0 +1,2 @@
+- Moeglichen Platzhalter fuer Tabelle in tabellenzeile, sodass diese Zeile
+    wiederholt wird.
