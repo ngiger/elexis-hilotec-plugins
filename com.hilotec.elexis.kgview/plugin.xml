@@ -5,104 +5,13 @@
          point="org.eclipse.ui.views">
       <category
             id="com.hilotec.elexis.kgview.category"
-            name="Hilotec KG-View">
+            name="Hilotec KG">
       </category>
       <view
             category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.SysAnamneseView"
-            id="com.hilotec.elexis.kgview.SysAnamneseView"
-            name="Systemanamnese"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.SozAnamneseView"
-            id="com.hilotec.elexis.kgview.SozAnamneseView"
-            name="Sozialanamnese"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.FamAnamneseView"
-            id="com.hilotec.elexis.kgview.FamAnamneseView"
-            name="Familienanamnese"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.PersAnamneseView"
-            id="com.hilotec.elexis.kgview.PersAnamneseView"
-            name="Persönliche Anamnese"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.RisikoFView"
-            id="com.hilotec.elexis.kgview.RisikoFView"
-            name="Risikofaktoren"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.AllgemeinStView"
-            id="com.hilotec.elexis.kgview.AllgemeinStView"
-            name="Allgemeinstatus"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.LokalStView"
-            id="com.hilotec.elexis.kgview.LokalStView"
-            name="Lokalstatus"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.DiagnoseView"
-            id="com.hilotec.elexis.kgview.DiagnoseView"
-            name="Diagnose"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.JetzLeidenView"
-            id="com.hilotec.elexis.kgview.JetzLeidenView"
-            name="Jetziges Leiden"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.ProzedereView"
-            id="com.hilotec.elexis.kgview.ProzedereView"
-            name="Prozedere"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.KonsTimerView"
-            id="com.hilotec.elexis.kgview.KonsTimerView"
-            name="Konsultationstimer"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.KonsTimeView"
-            id="com.hilotec.elexis.kgview.KonsTimeView"
-            name="Konsultationszeit"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.TherapieView"
-            id="com.hilotec.elexis.kgview.TherapieView"
-            name="Therapie"
-            restorable="true">
-      </view>
-      <view
-            category="com.hilotec.elexis.kgview.category"
-            class="com.hilotec.elexis.kgview.VerlaufView"
-            id="com.hilotec.elexis.kgview.VerlaufView"
-            name="Verlauf"
+            class="com.hilotec.elexis.kgview.medikarte.MedikarteView"
+            id="com.hilotec.elexis.kgview.MedikarteView"
+            name="Medikamentenkarte"
             restorable="true">
       </view>
       <view
@@ -114,13 +23,126 @@
       </view>
       <view
             category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.KonsTimeView"
+            id="com.hilotec.elexis.kgview.KonsTimeView"
+            name="Konsultationszeit"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.KonsTimerView"
+            id="com.hilotec.elexis.kgview.KonsTimerView"
+            name="Konsultationstimer"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.medikarte.FavMedikamentListe"
+            id="com.hilotec.elexis.kgview.medikarte.FavMedikamentListe"
+            name="Favoriten-Medikamentenliste"
+            restorable="true">
+      </view>
+      <category
+            id="com.hilotec.elexis.kgview.category.patientenfelder"
+            name="Hilotec KG - Patientenfelder">
+      </category>
+      <view
+            category="com.hilotec.elexis.kgview.category.patientenfelder"
+            class="com.hilotec.elexis.kgview.SysAnamneseView"
+            id="com.hilotec.elexis.kgview.SysAnamneseView"
+            name="Systemanamnese"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.patientenfelder"
+            class="com.hilotec.elexis.kgview.SozAnamneseView"
+            id="com.hilotec.elexis.kgview.SozAnamneseView"
+            name="Sozialanamnese"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.patientenfelder"
+            class="com.hilotec.elexis.kgview.FamAnamneseView"
+            id="com.hilotec.elexis.kgview.FamAnamneseView"
+            name="Familienanamnese"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.patientenfelder"
+            class="com.hilotec.elexis.kgview.PersAnamneseView"
+            id="com.hilotec.elexis.kgview.PersAnamneseView"
+            name="Persönliche Anamnese"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.patientenfelder"
+            class="com.hilotec.elexis.kgview.RisikoFView"
+            id="com.hilotec.elexis.kgview.RisikoFView"
+            name="Risikofaktoren"
+            restorable="true">
+      </view>
+      <category
+            id="com.hilotec.elexis.kgview.category.konsfelder"
+            name="Hilotec KG - Konsultationsfelder">
+      </category>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
+            class="com.hilotec.elexis.kgview.AllgemeinStView"
+            id="com.hilotec.elexis.kgview.AllgemeinStView"
+            name="Allgemeinstatus"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
+            class="com.hilotec.elexis.kgview.LokalStView"
+            id="com.hilotec.elexis.kgview.LokalStView"
+            name="Lokalstatus"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
+            class="com.hilotec.elexis.kgview.DiagnoseView"
+            id="com.hilotec.elexis.kgview.DiagnoseView"
+            name="Diagnose"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
+            class="com.hilotec.elexis.kgview.JetzLeidenView"
+            id="com.hilotec.elexis.kgview.JetzLeidenView"
+            name="Jetziges Leiden"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
+            class="com.hilotec.elexis.kgview.ProzedereView"
+            id="com.hilotec.elexis.kgview.ProzedereView"
+            name="Prozedere"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
+            class="com.hilotec.elexis.kgview.TherapieView"
+            id="com.hilotec.elexis.kgview.TherapieView"
+            name="Therapie"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
+            class="com.hilotec.elexis.kgview.VerlaufView"
+            id="com.hilotec.elexis.kgview.VerlaufView"
+            name="Verlauf"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.konsfelder"
             class="com.hilotec.elexis.kgview.RoentgenView"
             id="com.hilotec.elexis.kgview.RoentgenView"
             name="Röntgen"
             restorable="true">
       </view>
       <view
-            category="com.hilotec.elexis.kgview.category"
+            category="com.hilotec.elexis.kgview.category.konsfelder"
             class="com.hilotec.elexis.kgview.EKGView"
             id="com.hilotec.elexis.kgview.EKGView"
             name="EKG"
@@ -131,6 +153,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="com.hilotec.elexis.kgview.KGViewPerspektive"
+            icon="rsc/hilotec.png"
             id="com.hilotec.elexis.kgview.KGViewPerspektive"
             name="Hilotec KG">
       </perspective>
@@ -140,6 +163,10 @@
       <Factory
             Class="com.hilotec.elexis.kgview.data.KonsDataFactory"
             name="KonsData">
+      </Factory>
+      <Factory
+            Class="com.hilotec.elexis.kgview.data.FavMedikamentFactory"
+            name="FavMedikament">
       </Factory>
    </extension>
    <extension

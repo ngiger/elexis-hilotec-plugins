@@ -21,7 +21,9 @@ Rietstrasse 30
    </configIni>
 
    <launcherArgs>
-      <programArgs>-nl de</programArgs>
+      <programArgs>-nl de_CH</programArgs>
+      <vmArgs>-Dch.elexis.username=Administrator
+-Dch.elexis.password=admin</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 

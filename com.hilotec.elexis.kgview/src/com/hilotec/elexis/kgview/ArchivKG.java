@@ -2,6 +2,8 @@ package com.hilotec.elexis.kgview;
 
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.eclipse.ui.part.ViewPart;
 
@@ -23,7 +25,18 @@ public class ArchivKG extends ViewPart implements ElexisEventListener {
 		parent.setLayout(new FillLayout());
 
 		text = new ScrolledFormText(parent, true);
-		//text = Desk.getToolkit().createFormText(sft, false);
+		text.getFormText().addHyperlinkListener(new IHyperlinkListener() {
+			public void linkExited(HyperlinkEvent e) {}
+			public void linkEntered(HyperlinkEvent e) {}
+			public void linkActivated(HyperlinkEvent e) {
+				if (!(e.getHref() instanceof String)) return;
+				String href = (String) e.getHref();
+				if (href.startsWith("kons:")) {
+					Konsultation kons = Konsultation.load(href.substring(5));
+					ElexisEventDispatcher.fireSelectionEvent(kons);
+				}
+			}
+		});
 		
 		// TODO: Fonts fuer text laden
 		//text.setFont("konstitel", Desk.getFont(cfgName));

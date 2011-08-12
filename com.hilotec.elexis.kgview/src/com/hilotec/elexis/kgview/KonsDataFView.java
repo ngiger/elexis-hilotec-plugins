@@ -212,4 +212,10 @@ public abstract class KonsDataFView extends SimpleTextFView
 	public ElexisEvent getElexisEventFilter() {
 		return eetmpl;
 	}
+	
+	@Override
+	public void dispose() {
+		ElexisEventDispatcher.getInstance().removeListeners(this);
+		super.dispose();
+	}
 }

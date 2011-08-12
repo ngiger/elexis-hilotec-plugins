@@ -3,6 +3,8 @@ package com.hilotec.elexis.kgview;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,6 +35,16 @@ abstract public class SimpleTextFView extends ViewPart {
 			}
 			
 			public void focusGained(FocusEvent e) {}
+		});
+		
+		// TraverseListener um das Standard-Tab-Verhalten zu ueberschreiben.
+		// Wir wollen mit Tab Fokus weiterbewegen.
+		textfield.addTraverseListener(new TraverseListener() {
+			public void keyTraversed(TraverseEvent e) {
+				if (e.detail == SWT.TRAVERSE_TAB_NEXT ||
+						e.detail == SWT.TRAVERSE_TAB_PREVIOUS)
+					e.doit = true;
+			}
 		});
 
 		GridData gd = new GridData();
