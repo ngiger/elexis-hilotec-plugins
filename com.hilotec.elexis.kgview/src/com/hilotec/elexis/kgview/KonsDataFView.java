@@ -183,6 +183,7 @@ public abstract class KonsDataFView extends SimpleTextFView
 	}
 	
 	public void catchElexisEvent(ElexisEvent ev) {
+		if (ev.getObject() == null) return;
 		if (ev.getObjectClass().equals(Konsultation.class)) {
 			Konsultation k = (Konsultation) ev.getObject();
 			KonsData kd = new KonsData(k);
