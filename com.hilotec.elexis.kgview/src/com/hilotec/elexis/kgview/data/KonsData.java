@@ -2,9 +2,10 @@ package com.hilotec.elexis.kgview.data;
 
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.PersistentObject;
+import ch.rgw.tools.TimeTool;
 
 public class KonsData extends PersistentObject {
-	public static final String VERSION = "4";
+	public static final String VERSION = "5";
 	public static final String PLUGIN_ID = "com.hilotec.elexis.kgview";
 	
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_KONSDATA";
@@ -21,6 +22,7 @@ public class KonsData extends PersistentObject {
 	public static final String FLD_ROENTGEN			= "Roentgen";
 	public static final String FLD_EKG				= "EKG";
 	public static final String FLD_KONSZEIT			= "KonsZeit";
+	public static final String FLD_KONSBEGINN		= "KonsBeginn";
 
 	static {
 		addMapping(TABLENAME,
@@ -36,7 +38,8 @@ public class KonsData extends PersistentObject {
 				"Verlauf",
 				"Roentgen",
 				"EKG",
-				"KonsZeit");
+				"KonsZeit",
+				"KonsBeginn");
 		checkTable();
 	}
 
@@ -57,7 +60,8 @@ public class KonsData extends PersistentObject {
 			+ "  Verlauf		TEXT, "
 			+ "  Roentgen		TEXT, "
 			+ "  EKG			TEXT, "
-			+ "  KonsZeit 		BIGINT "
+			+ "  KonsZeit 		BIGINT, "
+			+ "  KonsBeginn     BIGINT  "
 			+ ");"
 			+ "INSERT INTO " + TABLENAME + " (ID, JetzLeiden) VALUES "
 			+ "	('VERSION', '" + VERSION + "');";
@@ -84,6 +88,12 @@ public class KonsData extends PersistentObject {
 			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '4' WHERE"
 			+ "  ID LIKE 'VERSION';";
 	
+	private static final String up_4to5 =
+		"ALTER TABLE " + TABLENAME
+			+ "  ADD KonsBeginn	BIGINT AFTER KonsZeit;"
+			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '5' WHERE"
+			+ "  ID LIKE 'VERSION';";
+	
 	private static void checkTable() {
 		KonsData check = load("VERSION");
 		if (!check.exists()) {
@@ -95,6 +105,8 @@ public class KonsData extends PersistentObject {
 				createOrModifyTable(up_2to3);
 			if (check.getJetzigesLeiden().equals("3"))
 				createOrModifyTable(up_3to4);
+			if (check.getJetzigesLeiden().equals("4"))
+				createOrModifyTable(up_4to5);
 		}
 	}
 
@@ -116,6 +128,8 @@ public class KonsData extends PersistentObject {
 		super(kons.getId());
 		if (!exists()) {
 			create(kons.getId());
+			set(FLD_KONSBEGINN,
+				Long.toString(System.currentTimeMillis()));
 		}
 	}
 
@@ -181,6 +195,15 @@ public class KonsData extends PersistentObject {
 	
 	public long getKonsZeit() {
 		return Long.parseLong(get(FLD_KONSZEIT));
+	}
+	
+	public String getKonsBeginn() {
+		String ts = get(FLD_KONSBEGINN);
+		if (ts == null || ts.equals("")) return "";
+		
+		TimeTool t = new TimeTool();
+		t.setTimeInMillis(Long.parseLong(ts));
+		return t.toString(TimeTool.TIME_SMALL);
 	}
 
 

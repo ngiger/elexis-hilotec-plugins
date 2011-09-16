@@ -77,12 +77,14 @@ public class ArchivKG extends ViewPart implements ElexisEventListener {
 	 * sb um die die Konsultation k erweitern
 	 */
 	private void processKonsultation(Konsultation k, StringBuilder sb) {
+		KonsData kd = KonsData.load(k);
+		
 		sb.append("<p>");
 		sb.append("<b>Konsultation</b> ");
-		sb.append("<a href=\"kons:" + k.getId() + "\">" + k.getDatum() + "</a>");
+		sb.append("<a href=\"kons:" + k.getId() + "\">");
+		sb.append(k.getDatum() + " " + kd.getKonsBeginn() + "</a>");
 		sb.append("<br/>");
 		
-		KonsData kd = KonsData.load(k);
 		addParagraph("Jetziges Leiden", kd.getJetzigesLeiden(),
 			kd.getJetzigesLeidenICPC(), sb);
 		addParagraph("Lokalstatus", kd.getLokalstatus(), sb);
