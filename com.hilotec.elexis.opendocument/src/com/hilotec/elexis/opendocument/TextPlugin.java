@@ -70,6 +70,7 @@ import ch.elexis.Hub;
 import ch.elexis.text.ITextPlugin;
 import ch.elexis.text.ReplaceCallback;
 import ch.elexis.util.SWTHelper;
+import ch.rgw.tools.StringTool;
 
 public class TextPlugin implements ITextPlugin {
 	private Process editor_process;
@@ -561,8 +562,96 @@ public class TextPlugin implements ITextPlugin {
 
 	}
 
+	/**
+	 * Tabelle in der sich der angegebene Platzhalter befindet befuellen. Dafuer
+	 * wird die Vorlagezeile 1:1 kopiert (insbesondere werden styles und breiten
+	 * uebernommen) und die spalten vom Plathalter an werden alle mit dem Inhalt
+	 * aus content ueberschrieben. Spalten vor dem angegebenen Platzhalter und
+	 * ueberschuessige danach werden 1:1 kopiert. 
+	 */
+	private void fillTableAt(OdfFileDom dom, Text match, String[][] content)
+			throws Exception
+	{
+		Node cellNode = match.getParentNode();
+		TableTableRowElement row;
+		TableTableCellElement cell;
+		int cellIndex = 0;
+		
+		// Find row-node
+		while (!(cellNode instanceof TableTableCellElement)) {
+			cellNode = cellNode.getParentNode();
+		}
+		cell = (TableTableCellElement) cellNode;
+		row = (TableTableRowElement) cell.getParentNode();
+		Node parent = row.getParentNode();
+		
+		// Zellenindex ausfindig machen
+		NodeList cellList = row.getChildNodes();
+		for (int i = 0; i < cellList.getLength(); i++) {
+			Node n = cellList.item(i);
+			if (!(n instanceof TableTableCellElement)) continue;
+			if (n == cell) break;
+			cellIndex++;
+		}
+		
+		for (String[] rData: content) {
+			if (rData == null) continue;
+			TableTableRowElement r = (TableTableRowElement) row.cloneNode(true);
+			
+			// Durch spalten und anderen Inhalt iterieren und entsprechende
+			// Zellen befuellen.
+			int i = 0;
+			NodeList nl = r.getChildNodes();
+			for (int j = 0; j < nl.getLength(); j++) {
+				Node n = nl.item(j);
+				if (!(n instanceof TableTableCellElement)) continue;
+				TableTableCellElement c = (TableTableCellElement) n;
+				if (i >= cellIndex && (i - cellIndex + 1 <= rData.length)) {
+					// FIXME
+					TextPElement pe = (TextPElement) c.getChildNodes().item(0);
+					
+					pe.setTextContent(StringTool.unNull(rData[i - cellIndex]));
+					Text t = (Text) pe.getFirstChild();
+					if (t != null) {
+						formatText(dom, t);
+					}
+				}
+				i++;
+			}
+			parent.insertBefore(r, row);
+		}
+		
+		parent.removeChild(row);
+	}
+
+	private void replaceTableFills(OdfFileDom dom, XPath xpath,
+			Pattern pat, boolean onlyFirst, ReplaceCallback cb)
+			throws Exception
+	{
+		String spat = pat.pattern();
+		spat = spat.replaceAll("\\\\\\[", "\\\\{");
+		spat = spat.replaceAll("\\\\\\]", "\\\\}");
+		Pattern npat = Pattern.compile(spat);
+		
+		List<Text> matches = findTextNode(dom, xpath, npat, onlyFirst);
+		for (Text match : matches) {
+			String text = match.getTextContent().replaceAll("\\{", "[").
+				replaceAll("\\}", "]");
+			Object replacement = cb.replace(text);
+			if (replacement instanceof String[][]) {
+				try {
+					fillTableAt(dom, match, (String[][]) replacement);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	private int findOrReplaceIn(OdfFileDom dom, Pattern pat,
 			ReplaceCallback cb, XPath xpath) throws Exception {
+		
+		replaceTableFills(dom, xpath, pat, false, cb);
 		List<Text> matches = findTextNode(dom, xpath, pat, false);
 
 		for (Text match : matches) {
