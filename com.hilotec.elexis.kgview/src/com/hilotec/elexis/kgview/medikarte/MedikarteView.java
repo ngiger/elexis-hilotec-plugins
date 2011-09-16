@@ -24,12 +24,9 @@ import ch.elexis.data.Artikel;
 import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
 import ch.elexis.data.Prescription;
-import ch.elexis.data.Query;
 import ch.elexis.util.PersistentObjectDropTarget;
 import ch.elexis.util.SWTHelper;
 import ch.elexis.util.ViewMenus;
-import ch.rgw.tools.StringTool;
-import ch.rgw.tools.TimeTool;
 
 public class MedikarteView extends ViewPart implements ElexisEventListener {
 	public static final String ID = "com.hilotec.elexis.kgview.MedikarteView";
@@ -174,22 +171,8 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		if (patient == null) return;
 			
 		// Medikation zu Patient zusammensuchen.
-		Query<Prescription> qbe = new Query<Prescription>(Prescription.class);
-		qbe.add(Prescription.PATIENT_ID, Query.EQUALS, patient.getId());
-		qbe.add(Prescription.REZEPT_ID, StringTool.leer, null);
-		if (!alle) {
-			qbe.startGroup();
-			String today = new TimeTool().toString(TimeTool.DATE_COMPACT);
-			qbe.add(Prescription.DATE_UNTIL, Query.GREATER_OR_EQUAL, today);
-			qbe.or();
-			qbe.add(Prescription.DATE_UNTIL, StringTool.leer, null);
-			qbe.or();
-			qbe.add(Prescription.DATE_UNTIL, Query.EQUALS, "");
-			qbe.endGroup();
-		}
-		qbe.orderBy(true, Prescription.DATE_FROM, Prescription.DATE_UNTIL,
-				Prescription.ARTICLE);
-		List<Prescription> l = qbe.execute();
+		List<Prescription> l = MedikarteHelpers.
+			medikarteMedikation(patient, alle);
 		
 		// Tabelle neu befuellen
 		for (Prescription p: l) {
