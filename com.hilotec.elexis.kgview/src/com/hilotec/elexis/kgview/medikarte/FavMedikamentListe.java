@@ -66,7 +66,10 @@ public class FavMedikamentListe extends ViewPart
 		tc = new TableColumn(table, 0);
 		tc.setText("Einheit");
 		tc.setWidth(40);
-
+		
+		tc = new TableColumn(table, 0);
+		tc.setText("Ordnungszahl");
+		tc.setWidth(40);
 		
 		// Drop Target um neue Eintraege zu erstellen
 		new PersistentObjectDropTarget(table,
@@ -155,6 +158,7 @@ public class FavMedikamentListe extends ViewPart
 			ti.setText(0, med.getBezeichnung());
 			ti.setText(1, med.getZweck());
 			ti.setText(2, med.getEinheit());
+			ti.setText(3, Integer.toString(med.getOrdnungszahl()));
 		}
 	}
 
