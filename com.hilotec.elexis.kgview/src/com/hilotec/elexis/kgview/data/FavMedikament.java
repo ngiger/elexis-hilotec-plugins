@@ -4,7 +4,7 @@ import ch.elexis.data.Artikel;
 import ch.elexis.data.PersistentObject;
 
 public class FavMedikament extends PersistentObject {
-	public static final String VERSION = "1";
+	public static final String VERSION = "2";
 	public static final String PLUGIN_ID = "com.hilotec.elexis.kgview";
 	
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_FAVMEDIKAMENT";
@@ -12,12 +12,14 @@ public class FavMedikament extends PersistentObject {
 	public static final String FLD_BEZEICHNUNG	= "Bezeichnung";
 	public static final String FLD_ZWECK		= "Zweck";
 	public static final String FLD_EINHEIT		= "Einheit";
+	public static final String FLD_ORDNUNGSZAHL	= "Ordnungszahl";
 	
 	static {
 		addMapping(TABLENAME,
 			"Bezeichnung",
 			"Zweck",
-			"Einheit");
+			"Einheit",
+			"Ordnungszahl");
 		checkTable();
 	}
 
@@ -27,12 +29,19 @@ public class FavMedikament extends PersistentObject {
 			+ "  lastupdate 	BIGINT, "
 			+ "  deleted		CHAR(1) DEFAULT '0', "
 			+ "  Artikel	 	VARCHAR(25), "
+			+ "  Ordnungszahl	INT DEFAULT 0,  "
 			+ "  Bezeichnung	TEXT, "
 			+ "  Zweck			TEXT, "
 			+ "  Einheit		TEXT  "
 			+ ");"
 			+ "INSERT INTO " + TABLENAME + " (ID, Bezeichnung) VALUES "
 			+ "	('VERSION', '" + VERSION + "');";
+	
+	private static final String up_1to2 =
+		"ALTER TABLE " + TABLENAME
+			+ "  ADD Ordnungszahl 	INT DEFAULT 0 AFTER Artikel;"
+			+ "UPDATE " + TABLENAME + " SET Bezeichnung = '2' WHERE"
+			+ "  ID LIKE 'VERSION';";
 	
 	private static void checkTable() {
 		
@@ -43,15 +52,19 @@ public class FavMedikament extends PersistentObject {
 		
 		if (fm == null) {
 			createOrModifyTable(create);
+		} else {
+			if (fm.equals("1"))
+				createOrModifyTable(up_1to2);
 		}
 	}
 
-	public FavMedikament(Artikel a, String b, String z, String e) {
+	public FavMedikament(Artikel a, int o, String b, String z, String e) {
 		super(a.getId());
 		if (!exists()) {
 			create(a.getId());
 		}
 		
+		setOrdnungszahl(o);
 		setBezeichnung(b);
 		setZweck(z);
 		setEinheit(e);
@@ -92,7 +105,10 @@ public class FavMedikament extends PersistentObject {
 	public Artikel getArtikel() {
 		return Artikel.load(getId());
 	}
-	
+
+	public int getOrdnungszahl() {
+		return getInt(FLD_ORDNUNGSZAHL);
+	}
 
 	public String getBezeichnung() {
 		return get(FLD_BEZEICHNUNG);
@@ -106,6 +122,10 @@ public class FavMedikament extends PersistentObject {
 		return get(FLD_EINHEIT);
 	}
 	
+	
+	public void setOrdnungszahl(int ord) {
+		setInt(FLD_ORDNUNGSZAHL, ord);
+	}
 	
 	public void setBezeichnung(String txt) {
 		set(FLD_BEZEICHNUNG, txt);

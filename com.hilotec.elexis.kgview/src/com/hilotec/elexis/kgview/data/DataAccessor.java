@@ -1,6 +1,8 @@
 package com.hilotec.elexis.kgview.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.SortedSet;
@@ -61,6 +63,31 @@ public class DataAccessor implements IDataAccess {
 			if (!prescs.containsKey(ev))
 				prescs.put(ev, new ArrayList<Prescription>());
 			prescs.get(ev).add(p);
+		}
+		
+		// Die einzelnen Listen nach Ordnungszahl sortieren
+		for (String ev: evs) {
+			List<Prescription> pl = prescs.get(ev);
+			Collections.sort(pl, new Comparator<Prescription>() {
+				@Override
+				public int compare(Prescription o1, Prescription o2) {
+					FavMedikament fm1 = FavMedikament.load(o1.getArtikel());
+					FavMedikament fm2 = FavMedikament.load(o2.getArtikel());
+					
+					// Nicht-Favoriten-medikamente werden ganz ans Ende
+					// geschoben.
+					if (fm1 == null && fm2 == null)
+						return 0;
+					else if (fm1 == null)
+						return 1;
+					else if (fm2 == null)
+						return -1;
+					
+					// - weil die Grössten oben sein sollen 
+					Integer i = fm1.getOrdnungszahl();
+					return -i.compareTo(fm2.getOrdnungszahl());
+				}
+			});
 		}
 		
 		// Zeilen fuer Spaltenueberschriften zaehlen

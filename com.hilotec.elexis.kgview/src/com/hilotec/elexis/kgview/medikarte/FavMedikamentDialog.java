@@ -26,6 +26,7 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 	private Artikel artikel;
 	private FavMedikament fm;
 	
+	private Text tOrdnungszahl;
 	private Text tBezeichnung;
 	private Text tZweck;
 	private Text tEinheit;
@@ -53,6 +54,10 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 		Label lMed = new Label(comp, 0);
 		lMed.setText(artikel.getName());
 		
+		Label lOrd = new Label(comp, 0);
+		lOrd.setText("Ordnungszahl");
+		tOrdnungszahl = SWTHelper.createText(comp, 1, 0);
+		
 		Label lBez = new Label(comp, 0);
 		lBez.setText("Bezeichnung");
 		tBezeichnung = SWTHelper.createText(comp, 1, 0);
@@ -73,10 +78,12 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 		tEinheit = SWTHelper.createText(comp, 1, 0);
 		
 		if (fm != null) {
+			tOrdnungszahl.setText(Integer.toString(fm.getOrdnungszahl()));
 			tBezeichnung.setText(fm.getBezeichnung());
 			tZweck.setText(fm.getZweck());
 			tEinheit.setText(fm.getEinheit());
 		} else {
+			tOrdnungszahl.setText("0");
 			tBezeichnung.setText(artikel.getName());
 		}
 		
@@ -85,12 +92,22 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 
 	@Override
 	public void okPressed() {
+		// Ordnungszahl parsen und pruefen
+		int ord = 0;
+		try {
+			ord = Integer.parseInt(tOrdnungszahl.getText());
+		} catch (NumberFormatException nfe) {
+			setErrorMessage("Ordnungszahl muss eine Ganzzahl sein!");
+			return;
+		}
+		
 		if (fm == null) {
-			fm = new FavMedikament(artikel, tBezeichnung.getText(),
+			fm = new FavMedikament(artikel, ord, tBezeichnung.getText(),
 					tZweck.getText(), tEinheit.getText());
 			System.out.println("Created: ");
 			System.out.println(fm);
 		} else {
+			fm.setOrdnungszahl(ord);
 			fm.setBezeichnung(tBezeichnung.getText());
 			fm.setZweck(tZweck.getText());
 			fm.setEinheit(tEinheit.getText());
