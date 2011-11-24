@@ -153,6 +153,7 @@ public class FavMedikamentListe extends ViewPart
 		Query<FavMedikament> qMeds = new Query<FavMedikament>(FavMedikament.class);
 		// XXX: Irgendwie unschoen
 		qMeds.add("ID", Query.NOT_EQUAL, "VERSION");
+		qMeds.orderBy(false, FavMedikament.FLD_BEZEICHNUNG);
 		
 		List<FavMedikament> meds = qMeds.execute();
 		table.removeAll();

@@ -9,9 +9,9 @@ public class FavMedikament extends PersistentObject {
 	
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_FAVMEDIKAMENT";
 	
-	private static final String FLD_BEZEICHNUNG	= "Bezeichnung";
-	private static final String FLD_ZWECK		= "Zweck";
-	private static final String FLD_EINHEIT		= "Einheit";
+	public static final String FLD_BEZEICHNUNG	= "Bezeichnung";
+	public static final String FLD_ZWECK		= "Zweck";
+	public static final String FLD_EINHEIT		= "Einheit";
 	
 	static {
 		addMapping(TABLENAME,
