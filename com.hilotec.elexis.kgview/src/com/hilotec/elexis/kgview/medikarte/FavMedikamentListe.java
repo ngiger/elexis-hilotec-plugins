@@ -3,6 +3,7 @@ package com.hilotec.elexis.kgview.medikarte;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.events.KeyEvent;
@@ -26,6 +27,7 @@ import ch.elexis.data.Query;
 import ch.elexis.util.PersistentObjectDragSource;
 import ch.elexis.util.PersistentObjectDropTarget;
 import ch.elexis.util.SWTHelper;
+import ch.elexis.util.ViewMenus;
 
 /**
  * Liste der Favorisierten Medikamente anzeigen. Bietet die Möglichkeit zu
@@ -41,6 +43,9 @@ public class FavMedikamentListe extends ViewPart
 	public static final String ID = "com.hilotec.elexis.kgview.medikarte.FavMedikamentListe";
 	
 	private Table table;
+	
+	private Action actEdit;
+	private Action actDelete;
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -105,16 +110,14 @@ public class FavMedikamentListe extends ViewPart
 			}
 		});
 		
+		makeActions();
+		
 		// Mouse Listener zum aendern von Eintraegen
 		table.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent e) {}
 			public void mouseDown(MouseEvent e) {}
 			public void mouseDoubleClick(MouseEvent e) {
-				TableItem[] tis = table.getSelection();
-				if (tis == null || tis.length != 1) return;
-				new FavMedikamentDialog(getSite().getShell(),
-						(FavMedikament) tis[0].getData()).open();
-				refresh();
+				actEdit.run();
 			}
 		});
 		
@@ -123,24 +126,13 @@ public class FavMedikamentListe extends ViewPart
 			public void keyReleased(KeyEvent e) {}
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode != SWT.DEL) return;
-				TableItem[] tis = table.getSelection();
-				if (tis == null || tis.length == 0) return;
-				
-				// Nachfragen
-				if (!SWTHelper.askYesNo("Medikament(e) aus Liste entfernen",
-						"Sollen das/die ausgewählte(n) Medikament(e) aus der" +
-						" Liste entfernt werden?"))
-					return;
-				
-				for (TableItem ti: tis) {
-					FavMedikament fm = (FavMedikament) ti.getData();
-					fm.delete();
-				}
-				refresh();
+				actDelete.run();
 			}
 		});
 		
-		
+		// Kontextmenü für Liste
+		ViewMenus menus = new ViewMenus(getViewSite());
+		menus.createControlContextMenu(table, actEdit, actDelete);
 		
 		refresh();
 		ElexisEventDispatcher.getInstance().addListeners(this);
@@ -166,6 +158,39 @@ public class FavMedikamentListe extends ViewPart
 		}
 	}
 
+	private void makeActions() {
+		actEdit = new Action("Bearbeiten", Action.AS_PUSH_BUTTON) {
+			@Override
+			public void run() {
+				TableItem[] tis = table.getSelection();
+				if (tis == null || tis.length != 1) return;
+				new FavMedikamentDialog(getSite().getShell(),
+						(FavMedikament) tis[0].getData()).open();
+				refresh();
+			}
+		};
+		
+		actDelete = new Action("Löschen", Action.AS_PUSH_BUTTON) {
+			@Override
+			public void run() {
+				TableItem[] tis = table.getSelection();
+				if (tis == null || tis.length == 0) return;
+				
+				// Nachfragen
+				if (!SWTHelper.askYesNo("Medikament(e) aus Liste entfernen",
+						"Sollen das/die ausgewählte(n) Medikament(e) aus der" +
+						" Liste entfernt werden?"))
+					return;
+				
+				for (TableItem ti: tis) {
+					FavMedikament fm = (FavMedikament) ti.getData();
+					fm.delete();
+				}
+				refresh();
+			}
+		};
+	}
+	
 	@Override
 	public void setFocus() {}
 
