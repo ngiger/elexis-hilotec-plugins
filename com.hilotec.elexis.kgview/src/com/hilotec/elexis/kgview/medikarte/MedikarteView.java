@@ -203,7 +203,11 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			}
 		};
 	}
-	
+
+	/** Formatiere Volltext (mit \n) fuer Darstellung in Tabelle. */
+	private String fmtVolltext(String text) {
+		return text.replaceAll("[\\n\\r]+", ", ");
+	}
 
 	private void refresh() {
 		table.removeAll();
@@ -232,7 +236,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			ti.setText(i++, dosierung[3]);
 			
 			ti.setText(i++, fm.getEinheit());
-			ti.setText(i++, fm.getZweck());
+			ti.setText(i++, fmtVolltext(fm.getZweck()));
 			ti.setText(i++, p.getBemerkung());
 			
 			ti.setText(i++, p.getBeginDate());
