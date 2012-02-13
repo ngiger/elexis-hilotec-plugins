@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 import com.hilotec.elexis.kgview.data.FavMedikament;
@@ -21,15 +22,20 @@ import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
 import ch.elexis.data.Artikel;
+import ch.elexis.data.Brief;
+import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
 import ch.elexis.data.Prescription;
 import ch.elexis.util.PersistentObjectDropTarget;
 import ch.elexis.util.SWTHelper;
 import ch.elexis.util.ViewMenus;
+import ch.elexis.views.TextView;
 
 public class MedikarteView extends ViewPart implements ElexisEventListener {
 	public static final String ID = "com.hilotec.elexis.kgview.MedikarteView";
+	
+	private static final String TEMPLATE_MEDIKARTE = "Medikarte";
 	
 	private Table table;
 	// Alle Verschreibungen anzeigen? Oder nur die aktiven.
@@ -40,6 +46,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 	private Action actStop;
 	private Action actDelete;
 	private Action actFilter;
+	private Action actDrucken;
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -98,7 +105,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		
 		// Menus oben rechts in der View
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actFilter);
+		menus.createToolbar(actFilter, actDrucken);
 		
 		// Contextmenu fuer Tabelle
 		menus.createControlContextMenu(table, actEdit, actStop, actDelete);
@@ -162,6 +169,37 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 					alle = false;
 					refresh();
 				}
+			}
+		};
+		
+		// Aktion fuer den Drucken-Button
+		actDrucken = new Action("Drucken", Action.AS_PUSH_BUTTON) {
+			@Override
+			public void run() {
+				Konsultation kons = (Konsultation)
+					ElexisEventDispatcher.getSelected(Konsultation.class);
+				Patient patient = ElexisEventDispatcher.getSelectedPatient();
+				
+				if (patient == null || kons == null) {
+					SWTHelper.alert("Keine Konsultation ausgewählt",
+							"Eine Konsutlation muss ausgewählt sein in der " +
+							"die Medikamentenkarte erstellt werden soll.");
+					return;
+				}
+				
+				TextView tv;
+				try {
+					tv = (TextView) getSite().getPage().showView(TextView.ID);
+				} catch (PartInitException e) {
+					e.printStackTrace();
+					return;
+				}
+				
+				// Medikarte aus Vorlage erstellen
+				Brief doc = tv.getTextContainer().createFromTemplateName(
+						kons, TEMPLATE_MEDIKARTE, Brief.UNKNOWN, patient,
+						"Medikamentenkarte");
+				tv.openDocument(doc);
 			}
 		};
 	}
