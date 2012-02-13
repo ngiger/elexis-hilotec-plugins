@@ -9,6 +9,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import com.hilotec.elexis.kgview.Preferences;
+import com.hilotec.elexis.kgview.diagnoseliste.DiagnoselisteItem;
 import com.hilotec.elexis.kgview.medikarte.MedikarteHelpers;
 
 import ch.elexis.data.Konsultation;
@@ -142,6 +143,63 @@ public class DataAccessor implements IDataAccess {
 		return new Result<Object>(res);
 	}
 	
+	/** Tiefe des Baums, nur Wurzel hat Tiefe 1. */
+	private int dliDepth(DiagnoselisteItem item) {
+		if (item == null) return 0;
+		int depth = 0;
+		for (DiagnoselisteItem child: item.getChildren()) {
+			depth = Math.max(dliDepth(child), depth);
+		}
+		return depth + 1;
+	}
+	
+	/**
+	 * Generiere Zeile fuer ein DLI, und dessen Unteritems.
+	 *
+	 * @param item   Item fuer das eine Zeile generiert werden soll.
+	 * @param skip   Anzahl der Spalten am Anfang zu ueberspringen
+	 * @param ignore Nur fuer Unterelemente generieren.
+	 * @param dest   Liste in der die Zeilen abgelegt werden sollen.
+	 */
+	private void generiereDLIZeilen(DiagnoselisteItem item, int skip,
+			boolean ignore, List<String[]> dest)
+	{
+		if (!ignore) {
+			skip++;
+			String[] zeile = new String[skip];
+			zeile[skip - 1] = item.getText();
+			dest.add(zeile);
+		}
+		
+		for (DiagnoselisteItem child: item.getChildren()) {
+			generiereDLIZeilen(child, skip, false, dest);
+		}
+	}
+	
+	private Result<Object> generiereDiagnoseliste(Patient pat) {
+		// TODO: Waere schoen wenn wir den Baum hier nicht 2x traversieren
+		// muessten.
+		DiagnoselisteItem root = DiagnoselisteItem.getRoot(pat);
+		int depth = dliDepth(root);
+		
+		// Nur Wurzel oder weniger -> abbrechen.
+		if (depth <= 1) {
+			return new Result<Object>(""); 
+		}
+		
+		List<String[]> rows = new ArrayList<String[]>();
+		generiereDLIZeilen(root, 0, true, rows);
+		
+		// Resultat in Array umwandeln
+		String[][] res = new String[rows.size()][];
+		int i = 0;
+		for (String[] row: rows) {
+			res[i++] = row;
+		}
+		
+		return new Result<Object>(res);
+	}
+	
 	public Result<Object> getObject(String descriptor,
 			PersistentObject dependentObject, String dates, String[] params)
 	{
@@ -154,8 +212,11 @@ public class DataAccessor implements IDataAccess {
 		{
 			return new Result<Object>(
 				MedikarteHelpers.medikarteDatum((Patient) dependentObject));
+		} else if (dependentObject instanceof Patient &&
+				descriptor.equals("Diagnoseliste"))
+		{
+			return generiereDiagnoseliste((Patient) dependentObject);
 		}
-		
 		if (!(dependentObject instanceof Konsultation)) {
 			return new Result<Object>(Result.SEVERITY.ERROR,
 				IDataAccess.INVALID_PARAMETERS, "Ungültiger Parameter",
