@@ -169,6 +169,36 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		return (s.isEmpty() && allowempty) || tt.setDate(s);
 	}
 	
+	/**
+	 * Format einer Dosierung ueberpruefen.
+	 */
+	private boolean validateDosierung(String s) {
+		// Spezielle Dosierung auf Beiblatt
+		if (s.equals("x"))
+			return true;
+
+		// Ganzzahlige Dosierung
+		if (s.matches("[0-9]+")) {
+			return true;
+		}
+		
+		// Bruch-Dosierung
+		if (s.matches("[0-9]+/[0-9]+")) {
+			String[] parts = s.split("/");
+			int z, n;
+			try {
+				z = Integer.parseInt(parts[0]);
+				n = Integer.parseInt(parts[1]);
+			} catch (NumberFormatException nfe) {
+				// Sollte nicht passieren nach Regex-Check oben.
+				return false;
+			}	
+			return (z > 0) && (n > 0);
+		}
+		
+		return false;
+	}
+	
 	private boolean validateInput() {
 		setMessage("");
 		
@@ -189,6 +219,19 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			return false;
 		}
 		
+		// Format der Dosierungen pruefen
+		if (!validateDosierung(tDoMorgen.getText()) ||
+			!validateDosierung(tDoMittag.getText()) ||
+			!validateDosierung(tDoAbend.getText()) ||
+			!validateDosierung(tDoNacht.getText()))
+		{
+			setMessage("Fehler: Ungültige Dosierung. Erwarte nicht-negative " +
+					"Ganzzahl, Bruch mit positivem, ganzzahligem Zähler " + 
+					"und Nenner, oder x für Einnahme gemäss separater " +
+					"Verschreibungskarte.");
+			return false;
+		}
+			
 		return true;
 	}
 	
