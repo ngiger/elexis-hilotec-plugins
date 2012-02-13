@@ -23,6 +23,13 @@
       </view>
       <view
             category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.diagnoseliste.DiagnoselisteView"
+            id="com.hilotec.elexis.kgview.DiagnoselisteView"
+            name="Diagnoseliste"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category"
             class="com.hilotec.elexis.kgview.KonsTimeView"
             id="com.hilotec.elexis.kgview.KonsTimeView"
             name="Konsultationszeit"
@@ -167,6 +174,10 @@
       <Factory
             Class="com.hilotec.elexis.kgview.data.FavMedikamentFactory"
             name="FavMedikament">
+      </Factory>
+      <Factory
+            Class="com.hilotec.elexis.kgview.diagnoseliste.DLIFactory"
+            name="DiagnoselisteItem">
       </Factory>
    </extension>
    <extension
