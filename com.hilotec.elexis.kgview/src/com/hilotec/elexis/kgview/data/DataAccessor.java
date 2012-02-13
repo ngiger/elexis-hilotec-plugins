@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.medikarte.MedikarteHelpers;
 
 import ch.elexis.data.Konsultation;
@@ -84,9 +85,34 @@ public class DataAccessor implements IDataAccess {
 		int extra = 2 * evs.size() - (evs.contains("") ? 2 : 1);
 		String[][] res = new String[l.size() + extra][];
 		
-		// Tabelle Generieren
+		
+		// Einnahmevorschriften Sortieren
+		String evs_ordered[] = new String[evs.size()];
 		int i = 0;
+		// Zuerst Medikamente ohne Vorschrift
+		if (evs.contains("")) {
+			evs_ordered[i++] = "";
+			evs.remove("");
+		}
+		// Dann die konfigurierten Vorschriften in der konfigurierten
+		// Reihenfolge
+		String evs_config[] = Preferences.getEinnahmevorschriften();
+		for (String ev: evs_config) {
+			if (evs.contains(ev)) {
+				evs_ordered[i++] = ev;
+				evs.remove(ev);
+			}
+		}
+		// Am schluss noch der Rest alphabetisch
 		for (String ev: evs) {
+			evs_ordered[i++] = ev;
+			evs.remove(ev);
+		}
+		
+		
+		// Tabelle Generieren
+		i = 0;
+		for (String ev: evs_ordered) {
 			// Ueberschrift
 			if (i != 0) res[i++] = emptyRow(7);
 			if (!ev.equals("")) {
