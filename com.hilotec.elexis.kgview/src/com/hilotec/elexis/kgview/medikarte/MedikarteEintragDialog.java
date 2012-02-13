@@ -33,6 +33,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 	private FavMedikament fm;
 	private Prescription presc;
 	
+	private Text tOrd;
 	private Text tDoMorgen;
 	private Text tDoMittag;
 	private Text tDoAbend;
@@ -74,6 +75,11 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		lLOMed.setText("Original");
 		Label lOMed = new Label(comp, SWT.BORDER);
 		lOMed.setText(fm.getArtikel().getName());
+		
+		// Feld fuer Ordnungszahl
+		Label lOrd = new Label(comp, 0);
+		lOrd.setText("Ordnungszahl");
+		tOrd = SWTHelper.createText(comp, 1, 0);
 		
 		// Felder zum ausfuellen, Datum von bis, Dosis
 		Label lVon = new Label(comp, 0);
@@ -126,6 +132,9 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		
 		
 		if (presc != null) {
+			int o = MedikarteHelpers.getOrdnungszahl(presc);
+			tOrd.setText(Integer.toString(o));
+			
 			tVon.setText(presc.getBeginDate());
 			tBis.setText(presc.getEndDate());
 			String[] dos = presc.getDosis().split("-");
@@ -144,6 +153,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 				cEV.select(evIndex);
 			}
 		} else {
+			tOrd.setText(Integer.toString(fm.getOrdnungszahl()));
 			tVon.setText(new TimeTool().toString(TimeTool.DATE_GER));
 			tDoMorgen.setText("0");
 			tDoMittag.setText("0");
@@ -161,6 +171,8 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 	
 	private boolean validateInput() {
 		setMessage("");
+		
+		// Datumsfelder pruefen
 		if (!validateDate(tVon.getText(), false) ||
 			!validateDate(tBis.getText(), true))
 		{
@@ -168,6 +180,15 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 					"dd.mm.jjjj, oder leer (nur Bis).");
 			return false;
 		}
+		
+		// Ordnungszahl pruefen
+		try {
+			Integer.parseInt(tOrd.getText());
+		} catch (NumberFormatException nfe) {
+			setMessage("Fehler: Ungültige Ordnungszahl. Erwarte Ganzzahl.");
+			return false;
+		}
+		
 		return true;
 	}
 	
@@ -188,6 +209,8 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		}
 		presc.setBeginDate(tVon.getText());
 		presc.setEndDate(tBis.getText());
+		MedikarteHelpers.setOrdnungszahl(presc,
+				Integer.parseInt(tOrd.getText()));
 		close();
 	}
 }

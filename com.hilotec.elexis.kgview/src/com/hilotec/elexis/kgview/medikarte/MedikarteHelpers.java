@@ -1,6 +1,9 @@
 package com.hilotec.elexis.kgview.medikarte;
 
+import java.util.Hashtable;
 import java.util.List;
+
+import com.hilotec.elexis.kgview.data.FavMedikament;
 
 import ch.elexis.data.Patient;
 import ch.elexis.data.Prescription;
@@ -9,7 +12,7 @@ import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
 public class MedikarteHelpers {
-	
+	private final static String PRESC_EI_ORD = "hilotec:ordnungszahl";
 	/**
 	 * Medikation auf der Medikarte des Patienten zusammensuchen.
 	 * Wenn !alle, dann wird nur die noch aktuelle Medikation zurueckgegeben.
@@ -54,4 +57,32 @@ public class MedikarteHelpers {
 		return max.toString(TimeTool.DATE_GER);
 	}
 	
+	/**
+	 * Ordnungszahl fuer Verschreibung holen
+	 */
+	@SuppressWarnings("rawtypes")
+	public static int getOrdnungszahl(Prescription presc) {
+		Hashtable ht = presc.getHashtable(Prescription.FLD_EXTINFO);
+		
+		// Ordnungszahl der Verschreibung
+		if (ht.containsKey(PRESC_EI_ORD))
+			return (Integer) ht.get(PRESC_EI_ORD);
+		
+		// Standard fuers Medikament
+		FavMedikament fm = FavMedikament.load(presc.getArtikel());
+		if (fm != null)
+			return fm.getOrdnungszahl();
+		
+		return 0;
+	}
+	
+	/**
+	 * Ordnungszahl fuer Verschreibung setzen
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void setOrdnungszahl(Prescription presc, int ord) {
+		Hashtable ht = presc.getHashtable(Prescription.FLD_EXTINFO);
+		ht.put(PRESC_EI_ORD, ord);
+		presc.setHashtable(Prescription.FLD_EXTINFO, ht);
+	}
 }

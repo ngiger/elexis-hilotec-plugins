@@ -70,22 +70,12 @@ public class DataAccessor implements IDataAccess {
 			List<Prescription> pl = prescs.get(ev);
 			Collections.sort(pl, new Comparator<Prescription>() {
 				@Override
-				public int compare(Prescription o1, Prescription o2) {
-					FavMedikament fm1 = FavMedikament.load(o1.getArtikel());
-					FavMedikament fm2 = FavMedikament.load(o2.getArtikel());
-					
-					// Nicht-Favoriten-medikamente werden ganz ans Ende
-					// geschoben.
-					if (fm1 == null && fm2 == null)
-						return 0;
-					else if (fm1 == null)
-						return 1;
-					else if (fm2 == null)
-						return -1;
+				public int compare(Prescription p1, Prescription p2) {
+					Integer o1 = MedikarteHelpers.getOrdnungszahl(p1);
+					Integer o2 = MedikarteHelpers.getOrdnungszahl(p2);
 					
 					// - weil die Grössten oben sein sollen 
-					Integer i = fm1.getOrdnungszahl();
-					return -i.compareTo(fm2.getOrdnungszahl());
+					return -o1.compareTo(o2);
 				}
 			});
 		}
