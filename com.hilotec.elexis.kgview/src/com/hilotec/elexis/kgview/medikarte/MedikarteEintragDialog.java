@@ -1,5 +1,7 @@
 package com.hilotec.elexis.kgview.medikarte;
 
+import java.util.HashMap;
+
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -12,6 +14,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.data.FavMedikament;
 
 import ch.elexis.data.Patient;
@@ -95,12 +98,20 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		tDoNacht = new Text(cDos, SWT.BORDER);
 		tDoNacht.setLayoutData(new RowData(30, SWT.DEFAULT));
 		
+		// Liste mit Einnahmevorschriften initialisieren
 		Label lEV = new Label(comp, 0);
 		lEV.setText("Einnahmevorschrift");
 		cEV = new Combo(comp, SWT.DROP_DOWN | SWT.BORDER);
+		HashMap<String, Integer> evMap = new HashMap<String, Integer>();
+		int evIndex = 0;
 		cEV.add("");
-		cEV.add("Bei Bedarf");
 		cEV.select(0);
+		evMap.put("", evIndex++);
+		for (String ev: Preferences.getEinnahmevorschriften()) {
+			if (evMap.containsKey(ev)) continue;
+			cEV.add(ev);
+			evMap.put(ev, evIndex++);
+		}
 
 		// Zweck, Einheit, rein informativ
 		Label lZweck = new Label(comp, 0);
@@ -123,9 +134,15 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			tDoAbend.setText(dos[2]);
 			tDoNacht.setText(dos[3]);
 			
-			// XXX: Nicht wirklich elegant so
-			if (presc.getBemerkung().equals("Bei Bedarf"))
-				cEV.select(1);
+			// Korrekte Einnahmevorschrift auswaehlen
+			String ev = presc.getBemerkung();
+			if (evMap.containsKey(ev)) {
+				cEV.select(evMap.get(ev));
+			} else {
+				// XXX: Ist das so sinnvoll??
+				cEV.add(ev);
+				cEV.select(evIndex);
+			}
 		} else {
 			tVon.setText(new TimeTool().toString(TimeTool.DATE_GER));
 			tDoMorgen.setText("0");
@@ -160,8 +177,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		String dosierung =
 			tDoMorgen.getText() + "-" + tDoMittag.getText() + "-" +
 			tDoAbend.getText() + "-" + tDoNacht.getText();
-		String bemerkung =
-			(cEV.getSelectionIndex() == 1 ? "Bei Bedarf" : "");
+		String bemerkung = cEV.getItem(cEV.getSelectionIndex());
 		
 		if (presc == null) {
 			presc = new Prescription(fm.getArtikel(), pat,
