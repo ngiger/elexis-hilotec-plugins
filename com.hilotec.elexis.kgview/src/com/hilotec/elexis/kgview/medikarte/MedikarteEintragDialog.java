@@ -66,6 +66,12 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		Label lMed = new Label(comp, SWT.BORDER);
 		lMed.setText(fm.getBezeichnung());
 		
+		// Originalnamen anzeigen
+		Label lLOMed = new Label(comp, 0);
+		lLOMed.setText("Original");
+		Label lOMed = new Label(comp, SWT.BORDER);
+		lOMed.setText(fm.getArtikel().getName());
+		
 		// Felder zum ausfuellen, Datum von bis, Dosis
 		Label lVon = new Label(comp, 0);
 		lVon.setText("Von");
