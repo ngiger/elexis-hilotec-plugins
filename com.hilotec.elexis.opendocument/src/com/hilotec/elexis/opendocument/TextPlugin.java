@@ -491,7 +491,10 @@ public class TextPlugin implements ITextPlugin {
 		if (content.length == 0) {
 			return;
 		}
-		int colcount = content[0].length;
+		int colcount = 0;
+		for (String[] row: content) {
+			colcount = Math.max(colcount, row.length);
+		}
 		if (widths == null) {
 			// Create a column declaration for all columns
 			TableTableColumnElement ttc = (TableTableColumnElement) OdfXMLFactory
@@ -536,7 +539,10 @@ public class TextPlugin implements ITextPlugin {
 			// Create row
 			TableTableRowElement ttre = table.newTableTableRowElement();
 			table.appendChild(ttre);
-			for (String col : row) {
+			for (int i = 0; i < row.length; i++) {
+				String col = row[i];
+				boolean last = (i == row.length - 1);
+				
 				if (col == null) {
 					col = "";
 				}
@@ -546,6 +552,12 @@ public class TextPlugin implements ITextPlugin {
 				ttce.setOfficeValueTypeAttribute("string");
 				ttre.appendChild(ttce);
 
+				// If this is the last column, and we don't have values for all
+				// columns, we need to set colspan.
+				if (last && row.length < colcount) {
+					ttce.setTableNumberColumnsSpannedAttribute(colcount - i);
+				}
+				
 				TextPElement tp = (TextPElement) OdfXMLFactory.newOdfElement(
 						dom, TextPElement.ELEMENT_NAME);
 				tp.setStyleName(curStyle);
