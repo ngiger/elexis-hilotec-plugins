@@ -49,7 +49,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		table.setLinesVisible(true);
 		
 		// Ein haufen Tabellenueberschriften
-		String[] ueberschriften = { "Medikament", "Fr", "Mi", "Ab", "Na",
+		String[] ueberschriften = { "Medikament", "Mo", "Mi", "Ab", "Na",
 				"Einh", "Zweck", "Einnahmevorschrift", "Von", "Bis" };
 		int[] breiten = { 140, 30, 30, 30, 30, 40, 200, 70, 70, 70 };
 		for (int i = 0; i < breiten.length; i++) {
