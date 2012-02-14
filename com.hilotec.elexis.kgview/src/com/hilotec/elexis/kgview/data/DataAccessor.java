@@ -12,6 +12,7 @@ import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.diagnoseliste.DiagnoselisteItem;
 import com.hilotec.elexis.kgview.medikarte.MedikarteHelpers;
 
+import ch.elexis.data.Artikel;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
@@ -76,8 +77,23 @@ public class DataAccessor implements IDataAccess {
 					Integer o1 = MedikarteHelpers.getOrdnungszahl(p1);
 					Integer o2 = MedikarteHelpers.getOrdnungszahl(p2);
 					
-					// - weil die Grössten oben sein sollen 
-					return -o1.compareTo(o2);
+					// - weil die Grössten oben sein sollen
+					if (o1 != o2)
+						return -o1.compareTo(o2);
+					
+					Artikel a1 = p1.getArtikel();
+					Artikel a2 = p2.getArtikel();
+					
+					// Wenn beide die gleiche Ordnungszahl haben, dann
+					// alphabetisch nach Fav-Medi Name
+					FavMedikament fm1 = FavMedikament.load(a1);
+					FavMedikament fm2 = FavMedikament.load(a2);
+					if (fm1 != null && fm2 != null)
+						return fm1.getBezeichnung().compareTo(
+								fm2.getBezeichnung());
+					
+					// Als letzte Moeglichkeit nehmen wir das Artikel-Label
+					return a1.getLabel().compareTo(a1.getLabel());
 				}
 			});
 		}
