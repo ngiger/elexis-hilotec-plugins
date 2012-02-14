@@ -1,7 +1,7 @@
 package com.hilotec.elexis.kgview.medikarte;
 
-import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import com.hilotec.elexis.kgview.data.FavMedikament;
 
@@ -62,7 +62,7 @@ public class MedikarteHelpers {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static int getOrdnungszahl(Prescription presc) {
-		Hashtable ht = presc.getHashtable(Prescription.FLD_EXTINFO);
+		Map ht = presc.getMap(Prescription.FLD_EXTINFO);
 		
 		// Ordnungszahl der Verschreibung
 		if (ht.containsKey(PRESC_EI_ORD))
@@ -81,8 +81,8 @@ public class MedikarteHelpers {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void setOrdnungszahl(Prescription presc, int ord) {
-		Hashtable ht = presc.getHashtable(Prescription.FLD_EXTINFO);
+		Map ht = presc.getMap(Prescription.FLD_EXTINFO);
 		ht.put(PRESC_EI_ORD, ord);
-		presc.setHashtable(Prescription.FLD_EXTINFO, ht);
+		presc.setMap(Prescription.FLD_EXTINFO, ht);
 	}
 }

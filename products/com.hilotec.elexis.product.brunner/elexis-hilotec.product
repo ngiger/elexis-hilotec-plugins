@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Elexis" uid="ch.elexis" id="ch.elexis.ElexisProduct" application="ch.elexis.ElexisApp" version="2.1.6" useFeatures="false" includeLaunchers="true">
+<product name="Elexis" uid="ch.elexis" id="ch.elexis.ElexisProduct" application="ch.elexis.ElexisApp" version="2.1.7" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="rsc/elexis48.gif"/>
@@ -40,8 +40,10 @@ Rietstrasse 30
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
       <plugin id="ch.elexis"/>
@@ -51,10 +53,12 @@ Rietstrasse 30
       <plugin id="ch.elexis.befunde"/>
       <plugin id="ch.elexis.buchhaltung.basis"/>
       <plugin id="ch.elexis.connect.mythic"/>
+      <plugin id="ch.elexis.core"/>
       <plugin id="ch.elexis.diagnosecodes_ch"/>
       <plugin id="ch.elexis.ebanking_ch"/>
       <plugin id="ch.elexis.elexis_help"/>
       <plugin id="ch.elexis.icpc"/>
+      <plugin id="ch.elexis.icpc.fire" fragment="true"/>
       <plugin id="ch.elexis.impfplan"/>
       <plugin id="ch.elexis.importer.div"/>
       <plugin id="ch.elexis.importer.div_test" fragment="true"/>
@@ -81,8 +85,6 @@ Rietstrasse 30
       <plugin id="javax.xml"/>
       <plugin id="org.apache.commons.lang"/>
       <plugin id="org.apache.commons.logging"/>
-      <plugin id="org.apache.lucene"/>
-      <plugin id="org.apache.lucene.analysis"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.databinding"/>
@@ -97,8 +99,6 @@ Rietstrasse 30
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.help"/>
-      <plugin id="org.eclipse.help.base"/>
-      <plugin id="org.eclipse.help.ui"/>
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.osgi"/>

@@ -9,6 +9,7 @@ Require-Bundle: ch.elexis,
  org.eclipse.core.runtime,
  ch.rgw.utility,
  ch.elexis.icpc,
- org.eclipse.ui.forms
+ org.eclipse.ui.forms,
+ ch.elexis.core
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: hilotec.com
