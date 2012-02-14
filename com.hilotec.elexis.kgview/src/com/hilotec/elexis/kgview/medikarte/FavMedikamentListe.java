@@ -141,6 +141,11 @@ public class FavMedikamentListe extends ViewPart
 		ElexisEventDispatcher.getInstance().addListeners(this);
 	}
 	
+	/** Formatiere Volltext (mit \n) fuer Darstellung in Tabelle. */
+	private String fmtVolltext(String text) {
+		return text.replaceAll("[\\n\\r]+", ", ");
+	}
+	
 	/**
 	 * Liste neu laden.
 	 */
@@ -156,7 +161,7 @@ public class FavMedikamentListe extends ViewPart
 			TableItem ti = new TableItem(table, 0);
 			ti.setData(med);
 			ti.setText(0, med.getBezeichnung());
-			ti.setText(1, med.getZweck());
+			ti.setText(1, fmtVolltext(med.getZweck()));
 			ti.setText(2, med.getEinheit());
 			ti.setText(3, Integer.toString(med.getOrdnungszahl()));
 		}
