@@ -46,6 +46,7 @@ import org.odftoolkit.odfdom.doc.style.OdfStyleTextProperties;
 import org.odftoolkit.odfdom.doc.text.OdfTextLineBreak;
 import org.odftoolkit.odfdom.doc.text.OdfTextParagraph;
 import org.odftoolkit.odfdom.doc.text.OdfTextTab;
+import org.odftoolkit.odfdom.dom.element.OdfStylableElement;
 import org.odftoolkit.odfdom.dom.element.draw.DrawFrameElement;
 import org.odftoolkit.odfdom.dom.element.draw.DrawTextBoxElement;
 import org.odftoolkit.odfdom.dom.element.style.StyleBackgroundImageElement;
@@ -376,12 +377,48 @@ public class TextPlugin implements ITextPlugin {
 	 * dem ersten Stueck.
 	 * 
 	 * @return Letzter Knoten, der beim aufsplitten entstanden ist
+	 * @throws Exception 
 	 */
-	private Text formatText(OdfFileDom dom, Text text) {
+	private Text formatText(OdfFileDom dom, Text text) throws Exception {
 		Node parent = text.getParentNode();
 		Text cur = text;
 		int i;
 
+		// XXX: Hack fuer Text unterstrichen darzustellen
+		String textContent = text.getTextContent();
+		if (textContent.startsWith("_") && textContent.endsWith("_")) {
+			// _ Pre/Suffix entfernen
+			text.setTextContent(
+				textContent.substring(1, textContent.length() - 1));
+			
+			if (parent instanceof OdfStylableElement) {
+				OdfStylableElement stel = (OdfStylableElement) parent;
+				OdfFileDom contentDom = odt.getContentDom(); 
+				
+				// Neuen Stil erstellen mit unterstrichen aktiviert
+				OdfStyle newst = createNewStyle("ul_", contentDom,
+						odt.getStylesDom());
+				newst.setStyleFamilyAttribute("paragraph");
+				OdfStyleTextProperties stp = (OdfStyleTextProperties) OdfXMLFactory
+					.newOdfElement(contentDom,
+							StyleTextPropertiesElement.ELEMENT_NAME);
+				stp.setStyleTextUnderlineStyleAttribute("solid");
+				stp.setStyleTextUnderlineWidthAttribute("auto");
+				stp.setStyleTextUnderlineColorAttribute("font-color");
+				newst.appendChild(stp);
+				
+				// Originalstil als parent-Stil
+				// FIXME: Funktioniert so nicht wie gewuenscht, die
+				// style:text-properties muessten aus dem Elternstil kopiert
+				// werden.
+				String oldst = stel.getStyleName();
+				if (oldst != null && !oldst.isEmpty())
+					newst.setStyleParentStyleNameAttribute(oldst);
+				
+				stel.setStyleName(newst.getStyleNameAttribute());
+			}
+		}
+		
 		while ((i = cur.getTextContent().indexOf('\n')) >= 0) {
 			Text next = cur.splitText(i);
 			next.setTextContent(next.getTextContent().substring(1));
@@ -504,20 +541,12 @@ public class TextPlugin implements ITextPlugin {
 		} else {
 			float percentval = 65535f / 100f;
 
-			XPath xpath = odt.getXPath();
-			OdfOfficeAutomaticStyles autost = (OdfOfficeAutomaticStyles) xpath
-					.evaluate("//office:automatic-styles", dom,
-							XPathConstants.NODE);
-
 			for (int i = 0; i < widths.length; i++) {
 				// Create Style for this column
-				String stname = generateStyleName("col", odt.getContentDom(),
-						odt.getStylesDom(), xpath);
-				OdfStyle cst = (OdfStyle) OdfXMLFactory.newOdfElement(dom,
-						StyleStyleElement.ELEMENT_NAME);
-				cst.setStyleNameAttribute(stname);
+				OdfStyle cst = createNewStyle("col", odt.getContentDom(),
+						odt.getStylesDom());
+				String stname = cst.getStyleNameAttribute();
 				cst.setStyleFamilyAttribute("table-column");
-				autost.appendChild(cst);
 
 				OdfStyleTableColumnProperties stcp = (OdfStyleTableColumnProperties) OdfXMLFactory
 						.newOdfElement(dom,
@@ -814,6 +843,8 @@ public class TextPlugin implements ITextPlugin {
 			OdfFileDom styleDom, XPath xpath) {
 		NodeList nl;
 
+		// TODO: Muesste sich doch in konstanter Zeit machen lassen. ;-)
+		
 		for (int i = 0;; i++) {
 			String cur = prefix + i;
 
@@ -838,7 +869,26 @@ public class TextPlugin implements ITextPlugin {
 			}
 		}
 	}
+	
+	private OdfStyle createNewStyle(String prefix, OdfFileDom contentDom,
+			OdfFileDom styleDom) throws Exception
+	{
+		XPath xpath = odt.getXPath();
+		
+		String name = generateStyleName(prefix, contentDom, styleDom,
+				xpath);
+		OdfOfficeAutomaticStyles autost = (OdfOfficeAutomaticStyles) xpath
+				.evaluate("//office:automatic-styles", contentDom,
+						XPathConstants.NODE);
 
+		OdfStyle style = (OdfStyle) OdfXMLFactory.newOdfElement(contentDom,
+				StyleStyleElement.ELEMENT_NAME);
+		style.setStyleNameAttribute(name);
+		autost.appendChild(style);
+		
+		return style;
+	}
+	
 	@Override
 	public Object insertTextAt(int x, int y, int w, int h, String text,
 			int adjust) {
@@ -852,18 +902,10 @@ public class TextPlugin implements ITextPlugin {
 			XPath xpath = odt.getXPath();
 
 			// Generate Styles
-			String frstyle = generateStyleName("fr", contentDom, styleDom,
-					xpath);
-			OdfOfficeAutomaticStyles autost = (OdfOfficeAutomaticStyles) xpath
-					.evaluate("//office:automatic-styles", contentDom,
-							XPathConstants.NODE);
-
-			OdfStyle frst = (OdfStyle) OdfXMLFactory.newOdfElement(contentDom,
-					StyleStyleElement.ELEMENT_NAME);
-			frst.setStyleNameAttribute(frstyle);
+			OdfStyle frst = createNewStyle("fr", contentDom, styleDom);
+			String frstyle = frst.getStyleNameAttribute();
 			frst.setStyleFamilyAttribute("graphic");
 			frst.setStyleParentStyleNameAttribute("Frame");
-			autost.appendChild(frst);
 
 			OdfStyleGraphicProperties gsp = (OdfStyleGraphicProperties) OdfXMLFactory
 					.newOdfElement(contentDom,
