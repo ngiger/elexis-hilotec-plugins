@@ -15,21 +15,20 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import com.hilotec.elexis.kgview.data.KonsData;
 
-import ch.elexis.actions.ElexisEvent;
-import ch.elexis.actions.ElexisEventDispatcher;
-import ch.elexis.actions.ElexisEventListener;
 import ch.elexis.data.Konsultation;
-import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
 import ch.elexis.icpc.IcpcCode;
 import ch.elexis.util.PersistentObjectDropTarget;
 import ch.rgw.tools.StringTool;
 
 public abstract class KonsDataFView extends SimpleTextFView
-	implements ElexisEventListener
 {
 	protected final String dbfield;
 	protected final String icpcfield;
+	
+	private KonsData data;
+	private MyKonsListener listener;
+	
 	private List icpc_list;
 	private ArrayList<IcpcCode> code_list;
 
@@ -43,19 +42,16 @@ public abstract class KonsDataFView extends SimpleTextFView
 		icpcfield = icpc;
 	}
 
+	
+	
+	/** Leert das ICPC-Feld im UI */
 	protected void clearIcpc() {
 		if (icpcfield == null) return;
 		icpc_list.removeAll();
 		code_list.clear();
 	}
 	
-	private KonsData getCurKonsData() {
-		Konsultation k = (Konsultation)
-		ElexisEventDispatcher.getSelected(Konsultation.class);
-		return KonsData.load(k);
-	}
-
-	
+	/** Inhalt des ICPC-Felds in Datenbank ablegen */
 	protected void storeIcpc() {
 		if (icpcfield == null) return;
 		StringBuffer sb = new StringBuffer();
@@ -64,16 +60,16 @@ public abstract class KonsDataFView extends SimpleTextFView
 			sb.append(",");
 		}
 		if (sb.length() > 0) sb.setLength(sb.length() - 1);
-		getCurKonsData().set(icpcfield, sb.toString());
+		data.set(icpcfield, sb.toString());
 		setEmpty();
 	}
 	
-	protected void loadIcpc(Konsultation k) {
+	/** ICPC-Feld aus Datenbank laden */
+	protected void loadIcpc() {
 		if (icpcfield == null) return;
-		KonsData kd = new KonsData(k);
 		clearIcpc();
 		
-		String entries[] = StringTool.unNull(kd.get(icpcfield)).split(",");
+		String entries[] = StringTool.unNull(data.get(icpcfield)).split(",");
 		for (String c: entries) {
 			if (c.length() == 0) continue;
 			IcpcCode code = IcpcCode.load(c);
@@ -82,6 +78,7 @@ public abstract class KonsDataFView extends SimpleTextFView
 		}
 	}
 	
+	/** Aktuell ausgewaehlten ICPC Code loeschen (im UI und in DB). */
 	private void removeIcpcCode() {
 		if (icpcfield == null) return;
 		int i = icpc_list.getSelectionIndex();
@@ -92,7 +89,9 @@ public abstract class KonsDataFView extends SimpleTextFView
 		}
 		setEmpty();
 	}
-	
+
+
+
 	@Override
 	protected void initialize() {
 		if (icpcfield != null) {
@@ -139,13 +138,8 @@ public abstract class KonsDataFView extends SimpleTextFView
 					});
 		}
 		
-		Konsultation k = (Konsultation)
-			ElexisEventDispatcher.getSelected(Konsultation.class);
-		if (k != null) {
-			konsChanged(k);
-		}
-		
-		ElexisEventDispatcher.getInstance().addListeners(this);
+		data = null;
+		listener = new MyKonsListener();
 	}
 
 	@Override
@@ -154,19 +148,9 @@ public abstract class KonsDataFView extends SimpleTextFView
 		if (!isEnabled()) {
 			return;
 		}
-		KonsData kd = getCurKonsData();
-		kd.set(dbfield, getText());
+		data.set(dbfield, getText());
 	}
 
-	private void konsChanged(Konsultation k) {
-		KonsData kd = new KonsData(k);
-		setEnabled(true);
-
-		loadIcpc(k);
-		String text = StringTool.unNull(kd.get(dbfield));
-		setText(text);
-	}
-	
 	@Override
 	protected boolean isEmpty() {
 		return super.isEmpty() &&
@@ -181,42 +165,47 @@ public abstract class KonsDataFView extends SimpleTextFView
 		if (icpcfield != null)
 			icpc_list.setEnabled(en);
 	}
-	
-	public void catchElexisEvent(ElexisEvent ev) {
-		if (ev.getObject() == null) return;
-		if (ev.getObjectClass().equals(Konsultation.class)) {
-			Konsultation k = (Konsultation) ev.getObject();
-			KonsData kd = new KonsData(k);
-			if (ev.getType() == ElexisEvent.EVENT_DESELECTED) {
-				kd.set(dbfield, getText());
-				setEnabled(false);
-			} else if (ev.getType() == ElexisEvent.EVENT_SELECTED) {
-				konsChanged(k);
-			}
-		} else if (ev.getObjectClass().equals(Patient.class)) {
-			Konsultation k = (Konsultation)
-				ElexisEventDispatcher.getSelected(Konsultation.class);
-			if (k == null || (ev.getType() == ElexisEvent.EVENT_SELECTED &&
-				(k.getFall().getPatient() != ev.getObject())))
-			{
-				setEnabled(false);
-			}  else {
-				konsChanged(k);
-			}
-		}
+
+	/** Konsultation wurde deselektiert */
+	private void konsDeselected(Konsultation kons) {
+		setEnabled(false);
+		data = null;
 	}
-
-	private final ElexisEvent eetmpl =
-		new ElexisEvent(null, null, ElexisEvent.EVENT_SELECTED
-			| ElexisEvent.EVENT_DESELECTED);
-
-	public ElexisEvent getElexisEventFilter() {
-		return eetmpl;
+	
+	/** Konsultation wurde selektiert */
+	private void konsSelected(Konsultation kons) {
+		data = new KonsData(kons);
+		setEnabled(true);
+		
+		loadIcpc();
+		String text = StringTool.unNull(data.get(dbfield));
+		setText(text);
 	}
 	
 	@Override
 	public void dispose() {
-		ElexisEventDispatcher.getInstance().removeListeners(this);
+		listener.destroy();
 		super.dispose();
+	}
+	
+	
+	/**
+	 * Helper Klasse um auf dem Laufenden zu bleiben bezüglich der aktiven
+	 * Konsultation.
+	 */
+	class MyKonsListener extends POSelectionListener<Konsultation> {
+		public MyKonsListener() {
+			init();
+		}
+		
+		@Override
+		protected void deselected(Konsultation kons) {
+			konsDeselected(kons);
+		}
+		
+		@Override
+		protected void selected(Konsultation kons) {
+			konsSelected(kons);
+		}
 	}
 }

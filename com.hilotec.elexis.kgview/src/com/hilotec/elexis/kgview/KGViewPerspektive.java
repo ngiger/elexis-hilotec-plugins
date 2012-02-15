@@ -5,6 +5,17 @@ import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
+import com.hilotec.elexis.kgview.konsultationsfeld.AllgemeinStView;
+import com.hilotec.elexis.kgview.konsultationsfeld.DiagnoseView;
+import com.hilotec.elexis.kgview.konsultationsfeld.JetzLeidenView;
+import com.hilotec.elexis.kgview.konsultationsfeld.LokalStView;
+import com.hilotec.elexis.kgview.konsultationsfeld.ProzedereView;
+import com.hilotec.elexis.kgview.patientenfelder.FamAnamneseView;
+import com.hilotec.elexis.kgview.patientenfelder.PersAnamneseView;
+import com.hilotec.elexis.kgview.patientenfelder.RisikoFView;
+import com.hilotec.elexis.kgview.patientenfelder.SozAnamneseView;
+import com.hilotec.elexis.kgview.patientenfelder.SysAnamneseView;
+
 public class KGViewPerspektive implements IPerspectiveFactory {
 	public static final String ID = "com.hilotec.elexis.kgview.KGViewPerspektive";
 	

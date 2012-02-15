@@ -1,5 +1,6 @@
-package com.hilotec.elexis.kgview;
+package com.hilotec.elexis.kgview.konsultationsfeld;
 
+import com.hilotec.elexis.kgview.KonsDataFView;
 import com.hilotec.elexis.kgview.data.KonsData;
 
 public class RoentgenView extends KonsDataFView {

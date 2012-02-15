@@ -8,18 +8,13 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.hilotec.elexis.kgview.data.KonsData;
 
-import ch.elexis.actions.ElexisEvent;
-import ch.elexis.actions.ElexisEventDispatcher;
-import ch.elexis.actions.ElexisEventListener;
 import ch.elexis.data.Konsultation;
-import ch.elexis.data.Patient;
 
-public class KonsTimeView extends ViewPart
-	implements ElexisEventListener
-{
+public class KonsTimeView extends ViewPart {
 	public static final String ID = "com.hilotec.elexis.kgview.KonsTimeView";
 	
 	Label timerLbl;
+	MySelListener msl;
 
 	KonsData konsData;
 	long time;
@@ -34,14 +29,9 @@ public class KonsTimeView extends ViewPart
 		timerLbl = new Label(comp, 0);
 		createButtonControl(comp);
 
-		setEnabled(false);	
-		ElexisEventDispatcher.getInstance().addListeners(this);
+		setEnabled(false);
 		
-		Konsultation k = (Konsultation)
-			ElexisEventDispatcher.getSelected(Konsultation.class);
-		if (k != null) {
-			changeToKons(k);
-		}
+		msl = new MySelListener();
 	}
 
 	@Override
@@ -51,20 +41,21 @@ public class KonsTimeView extends ViewPart
 	protected void setEnabled(boolean en) { }
 	protected void stopTimer() { }
 
-	private void changeToKons(Konsultation k) {
+	/** Die ausgewaehlte Konsultation wurde deselektiert. */
+	private void konsDeselected(Konsultation kons) {
 		stopTimer();
-		if (konsData != null)
-			konsData.setKonsZeit(time);
+		konsData.setKonsZeit(time);
 		setEnabled(false);
-		
-		if (k != null) {
-			konsData = new KonsData(k);
-			time = konsData.getKonsZeit();
-			setEnabled(true);
-		} else {
-			time = 0;
-			konsData = null;
-		}
+		konsData = null;
+		time = 0;
+		updateLabel();
+	}
+	
+	/** Konsultation wurde selektiert. */
+	private void konsSelected(Konsultation kons) {
+		konsData = new KonsData(kons);
+		time = konsData.getKonsZeit();
+		setEnabled(true);
 		updateLabel();
 	}
 	
@@ -82,27 +73,31 @@ public class KonsTimeView extends ViewPart
 		timerLbl.pack();
 		timerLbl.update();
 	}
-	
-	@Override
-	public void catchElexisEvent(ElexisEvent ev) {
-		Object obj = ev.getObject();
-		if (obj instanceof Konsultation) {
-			Konsultation k = (Konsultation) obj;
-			if (ev.getType() == ElexisEvent.EVENT_SELECTED)
-				changeToKons(k);
-			else if (ev.getType() == ElexisEvent.EVENT_DESELECTED)
-				changeToKons(null);
-		} else if (obj instanceof Patient)
-			changeToKons(null);
-	}
-	
-	private final ElexisEvent eetmpl =
-		new ElexisEvent(null, null, ElexisEvent.EVENT_SELECTED
-			| ElexisEvent.EVENT_DESELECTED);
-	
 
 	@Override
-	public ElexisEvent getElexisEventFilter() {
-		return eetmpl;
+	public void dispose() {
+		msl.destroy();
+		super.dispose();
+	}
+
+	
+	/**
+	 * Hilfsklasse um auf dem Laufenden zu bleiben bezueglich der
+	 * ausgewaehlten Konsultation.
+	 */
+	private class MySelListener extends POSelectionListener<Konsultation> {
+		public MySelListener() {
+			init();
+		}
+		
+		@Override
+		protected void deselected(Konsultation kons) {
+			konsDeselected(kons);
+		}
+		
+		@Override
+		protected void selected(Konsultation kons) {
+			konsSelected(kons);
+		}
 	}
 }

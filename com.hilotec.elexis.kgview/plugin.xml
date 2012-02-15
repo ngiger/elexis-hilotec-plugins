@@ -55,35 +55,35 @@
       </category>
       <view
             category="com.hilotec.elexis.kgview.category.patientenfelder"
-            class="com.hilotec.elexis.kgview.SysAnamneseView"
+            class="com.hilotec.elexis.kgview.patientenfelder.SysAnamneseView"
             id="com.hilotec.elexis.kgview.SysAnamneseView"
             name="Systemanamnese"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.patientenfelder"
-            class="com.hilotec.elexis.kgview.SozAnamneseView"
+            class="com.hilotec.elexis.kgview.patientenfelder.SozAnamneseView"
             id="com.hilotec.elexis.kgview.SozAnamneseView"
             name="Sozialanamnese"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.patientenfelder"
-            class="com.hilotec.elexis.kgview.FamAnamneseView"
+            class="com.hilotec.elexis.kgview.patientenfelder.FamAnamneseView"
             id="com.hilotec.elexis.kgview.FamAnamneseView"
             name="Familienanamnese"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.patientenfelder"
-            class="com.hilotec.elexis.kgview.PersAnamneseView"
+            class="com.hilotec.elexis.kgview.patientenfelder.PersAnamneseView"
             id="com.hilotec.elexis.kgview.PersAnamneseView"
             name="Persönliche Anamnese"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.patientenfelder"
-            class="com.hilotec.elexis.kgview.RisikoFView"
+            class="com.hilotec.elexis.kgview.patientenfelder.RisikoFView"
             id="com.hilotec.elexis.kgview.RisikoFView"
             name="Risikofaktoren"
             restorable="true">
@@ -94,63 +94,63 @@
       </category>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.AllgemeinStView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.AllgemeinStView"
             id="com.hilotec.elexis.kgview.AllgemeinStView"
             name="Allgemeinstatus"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.LokalStView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.LokalStView"
             id="com.hilotec.elexis.kgview.LokalStView"
             name="Lokalstatus"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.DiagnoseView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.DiagnoseView"
             id="com.hilotec.elexis.kgview.DiagnoseView"
             name="Diagnose"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.JetzLeidenView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.JetzLeidenView"
             id="com.hilotec.elexis.kgview.JetzLeidenView"
             name="Jetziges Leiden"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.ProzedereView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.ProzedereView"
             id="com.hilotec.elexis.kgview.ProzedereView"
             name="Prozedere"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.TherapieView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.TherapieView"
             id="com.hilotec.elexis.kgview.TherapieView"
             name="Therapie"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.VerlaufView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.VerlaufView"
             id="com.hilotec.elexis.kgview.VerlaufView"
             name="Verlauf"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.RoentgenView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.RoentgenView"
             id="com.hilotec.elexis.kgview.RoentgenView"
             name="Röntgen"
             restorable="true">
       </view>
       <view
             category="com.hilotec.elexis.kgview.category.konsfelder"
-            class="com.hilotec.elexis.kgview.EKGView"
+            class="com.hilotec.elexis.kgview.konsultationsfeld.EKGView"
             id="com.hilotec.elexis.kgview.EKGView"
             name="EKG"
             restorable="true">

@@ -13,3 +13,4 @@ Require-Bundle: ch.elexis,
  ch.elexis.core
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: hilotec.com
+Bundle-Activator: com.hilotec.elexis.kgview.Activator

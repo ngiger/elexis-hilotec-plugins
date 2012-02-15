@@ -97,7 +97,9 @@ public class KonsData extends PersistentObject {
 	private static final String up_5to6 =
 		"ALTER TABLE " + TABLENAME
 			+ "  CHANGE KonsZeit KonsZeit BIGINT DEFAULT 0;"
-			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '5' WHERE"
+			+ "UPDATE " + TABLENAME + " SET KonsZeit = 0 WHERE"
+			+ "  KonsZeit IS NULL;"
+			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '6' WHERE"
 			+ "  ID LIKE 'VERSION';";
 
 	
