@@ -8,12 +8,18 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
 import com.hilotec.elexis.kgview.data.FavMedikament;
@@ -42,6 +48,7 @@ public class FavMedikamentListe extends ViewPart
 {
 	public static final String ID = "com.hilotec.elexis.kgview.medikarte.FavMedikamentListe";
 	
+	private Text suche;
 	private Table table;
 	
 	private Action actEdit;
@@ -49,7 +56,31 @@ public class FavMedikamentListe extends ViewPart
 	
 	@Override
 	public void createPartControl(Composite parent) {
+		parent.setLayout(new GridLayout(2, false));
+		
+		Label l = new Label(parent, SWT.NONE);
+		l.setText("Suche");
+		
+		GridData gd = new GridData();
+		gd.horizontalAlignment = GridData.FILL;
+		gd.grabExcessHorizontalSpace = true;
+		suche = new Text(parent, SWT.NONE);
+		suche.setLayoutData(gd);
+		suche.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				refresh();
+			}
+		});
+	
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		gd.horizontalAlignment = GridData.FILL;
+		gd.verticalAlignment = GridData.FILL;
+		gd.grabExcessHorizontalSpace = true;
+		gd.grabExcessVerticalSpace = true;
 		table = new Table(parent, SWT.V_SCROLL | SWT.SINGLE | SWT.FULL_SELECTION);
+		table.setLayoutData(gd);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 		
@@ -153,6 +184,10 @@ public class FavMedikamentListe extends ViewPart
 		Query<FavMedikament> qMeds = new Query<FavMedikament>(FavMedikament.class);
 		// XXX: Irgendwie unschoen
 		qMeds.add("ID", Query.NOT_EQUAL, "VERSION");
+		String suchstring = suche.getText();
+		if (!suchstring.isEmpty()) {
+			qMeds.add(FavMedikament.FLD_BEZEICHNUNG, Query.LIKE, "%" + suchstring + "%");
+		}
 		qMeds.orderBy(false, FavMedikament.FLD_BEZEICHNUNG);
 		
 		List<FavMedikament> meds = qMeds.execute();
