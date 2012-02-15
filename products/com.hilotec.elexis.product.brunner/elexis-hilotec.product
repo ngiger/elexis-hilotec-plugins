@@ -40,10 +40,8 @@ Rietstrasse 30
       </win>
    </launcher>
 
-
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="ch.elexis"/>
@@ -77,7 +75,7 @@ Rietstrasse 30
       <plugin id="ch.unibe.iam.scg.archie"/>
       <plugin id="ch.unibe.iam.scg.archie.samples" fragment="true"/>
       <plugin id="com.hilotec.elexis.kgview"/>
-      <plugin id="com.hilotec.elexis.messwerte"/>
+      <plugin id="com.hilotec.elexis.messwerte.v2"/>
       <plugin id="com.hilotec.elexis.opendocument"/>
       <plugin id="com.hilotec.elexis.pluginstatistiken"/>
       <plugin id="com.hilotec.elexis.toolbar"/>
