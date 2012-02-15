@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
 import ch.elexis.Hub;
+import ch.elexis.util.SWTHelper;
 
 
 public class KonsTimerView extends KonsTimeView
@@ -39,7 +40,13 @@ public class KonsTimerView extends KonsTimeView
 		resetBtn.setText("Reset");
 		resetBtn.addMouseListener(new MouseListener() {
 			public void mouseDown(MouseEvent e) {
-				resetTimer();
+				if (konsData != null && konsData.getKonsZeit() > 0 &&
+					SWTHelper.askYesNo("Timer zurücksetzen",
+						"Soll der Konsultationstimer wirklich auf 00:00:00 "+
+						"zurückgesetzt werden?"))
+				{
+					resetTimer();
+				}
 			}
 			public void mouseDoubleClick(MouseEvent e) {}
 			public void mouseUp(MouseEvent e) {}
