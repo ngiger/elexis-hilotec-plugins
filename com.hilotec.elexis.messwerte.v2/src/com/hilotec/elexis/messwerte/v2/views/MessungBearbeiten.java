@@ -17,14 +17,20 @@
 
 package com.hilotec.elexis.messwerte.v2.views;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Widget;
 
 import ch.elexis.util.SWTHelper;
 import ch.rgw.tools.TimeTool;
@@ -32,10 +38,12 @@ import ch.rgw.tools.TimeTool;
 import com.hilotec.elexis.messwerte.v2.data.Messung;
 import com.hilotec.elexis.messwerte.v2.data.Messwert;
 import com.hilotec.elexis.messwerte.v2.data.typen.IMesswertTyp;
+import com.hilotec.elexis.messwerte.v2.data.typen.MesswertTypCalc;
 import com.tiff.common.ui.datepicker.DatePickerCombo;
 
 /**
- * Dialog um eine Messung zu bearbeiten oder neu zu erstellen
+ * Dialog um eine Messung zu bearbeiten oder neu zu erstellen ohne spezielle
+ * Layout-Einstellungen.
  * 
  * @author Antoine Kaufmann
  */
@@ -43,6 +51,9 @@ public class MessungBearbeiten extends TitleAreaDialog {
 	private Messung messung;
 	private DatePickerCombo dateWidget;
 	private String tabtitle;
+	
+	/** Liste der Calc-Fields damit sie aktualisiert werden koennen. */
+	private List<Messwert> calcFields;
 	
 	public MessungBearbeiten(final Shell parent, Messung m){
 		super(parent);
@@ -69,6 +80,17 @@ public class MessungBearbeiten extends TitleAreaDialog {
 		dateWidget.setDate(new TimeTool(messung.getDatum()).getTime());
 		dateWidget.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));
 		
+		// Berechnete Felder aktualisieren wenn Eingabefelder veraendert werden
+		Listener recalcListener = new Listener() {
+			public void handleEvent(Event event) {
+				for (Messwert mw: calcFields) {
+					MesswertTypCalc mtc = (MesswertTypCalc) mw.getTyp();
+					mtc.calcNewValue(mw);
+				}
+			}
+		};
+		
+		calcFields = new ArrayList<Messwert>();
 		for (Messwert messwert : messung.getMesswerte()) {
 			Label l = new Label(comp, SWT.NONE);
 			IMesswertTyp dft = messwert.getTyp();
@@ -77,7 +99,14 @@ public class MessungBearbeiten extends TitleAreaDialog {
 				labelText += " [" + dft.getUnit() + "]";
 			}
 			l.setText(labelText);
-			dft.createWidget(comp, messwert);
+			
+			Widget w = dft.createWidget(comp, messwert);
+			
+			// Listener einrichten damit Calcfields aktualisiert werden koennen.
+			if (dft instanceof MesswertTypCalc)
+				calcFields.add(messwert);
+			else
+				w.addListener(SWT.Modify, recalcListener);
 		}
 		comp.setSize(comp.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		return scroll;
