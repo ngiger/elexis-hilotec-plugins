@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+
+	<xs:element name="datatypes">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="datatype" type="datatype" maxOccurs="unbounded"
+					minOccurs="1" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:simpleType name="nametype">
+		<xs:restriction base="xs:normalizedString">
+			<xs:minLength value="1" />
+			<xs:pattern value="[a-zA-Z0-9_]*" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="titletype">
+		<xs:restriction base="xs:normalizedString">
+			<xs:minLength value="0" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="unittype">
+		<xs:restriction base="xs:normalizedString" />
+	</xs:simpleType>
+
+	<xs:complexType name="datatype">
+		<xs:choice maxOccurs="unbounded" minOccurs="1">
+			<xs:element name="numfield" type="numfieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="strfield" type="strfieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="boolfield" type="boolfieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="scalefield" type="scalefieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="enumfield" type="enumfieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="calcfield" type="calcfieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="datafield" type="datafieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="datefield" type="datefieldtype"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="counterfield" type="counterfieldtype"
+				minOccurs="0" maxOccurs="1" />
+				<xs:element name="design" type="paneltype" maxOccurs="1" minOccurs="0"></xs:element>
+		</xs:choice>
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+
+	</xs:complexType>
+
+	<xs:complexType name="numfieldtype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="unit" type="unittype" default="" />
+		<xs:attribute name="default" type="xs:decimal" default="0" />
+		<xs:attribute name="places" type="xs:nonNegativeInteger"
+			default="0" />
+		<xs:attribute name="formatpattern" type="formatpatternType" default="#0.#" />
+		<xs:attribute name="roundingmode" type="roundingmodeType" default="HALF_UP"/>
+	</xs:complexType>
+
+	<xs:complexType name="strfieldtype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="unit" type="unittype" default="" />
+		<xs:attribute name="default" type="xs:string" default="" />
+		<xs:attribute name="lines" type="xs:positiveInteger"
+			default="1" />
+	</xs:complexType>
+
+	<xs:complexType name="boolfieldtype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="unit" type="unittype" default="" />
+		<xs:attribute name="default" type="xs:boolean" default="false" />
+	</xs:complexType>
+
+	<xs:complexType name="scalefieldtype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="unit" type="unittype" default="" />
+		<xs:attribute name="default" type="xs:integer" default="0" />
+		<xs:attribute name="min" type="xs:integer" default="0" />
+		<xs:attribute name="max" type="xs:integer" default="100" />
+	</xs:complexType>
+
+	<xs:complexType name="datefieldtype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+	</xs:complexType>
+
+	<xs:complexType name="counterfieldtype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="countermode" type="countermodetype" use="required" />
+		<xs:attribute name="startvalue" type="xs:integer" default="0"/>
+		<xs:attribute name="formatpattern" type="formatpatternType" default="#,000" />
+		<xs:attribute name="roundingmode" type="roundingmodeType" default="HALF_UP"/>
+	</xs:complexType>
+
+	<xs:complexType name="optiontype">
+		<xs:attribute name="value" type="xs:nonNegativeInteger"
+			use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+	</xs:complexType>
+
+	<xs:complexType name="enumfieldtype">
+		<xs:sequence>
+			<xs:element name="option" type="optiontype" minOccurs="1"
+				maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="unit" type="unittype" default="" />
+		<xs:attribute name="default" type="xs:nonNegativeInteger"
+			use="required" />
+	</xs:complexType>
+
+	<xs:complexType name="formulatype">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="interpreter" type="xs:normalizedString"
+					use="required" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+
+	<xs:complexType name="vartype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="source" type="xs:normalizedString"
+			use="required" />
+	</xs:complexType>
+
+	<xs:complexType name="calcfieldtype">
+		<xs:sequence>
+			<xs:element name="var" type="vartype" minOccurs="0"
+				maxOccurs="unbounded" />
+			<xs:element name="formula" type="formulatype" minOccurs="1"
+				maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="unit" type="unittype" default="" />
+		<xs:attribute name="places" type="xs:nonNegativeInteger"
+			default="0" />
+		<xs:attribute name="formatpattern" type="formatpatternType" default="#0.#" />
+		<xs:attribute name="roundingmode" type="roundingmodeType" default="HALF_UP"/>
+	</xs:complexType>
+
+	<xs:complexType name="datafieldtype">
+		<xs:attribute name="name" type="nametype" use="required" />
+		<xs:attribute name="title" type="titletype" use="required" />
+		<xs:attribute name="type" type="nametype" use="required" />
+		<xs:attribute name="unit" type="unittype" default="" />
+	</xs:complexType>
+
+	<xs:complexType name="paneltype">
+		<xs:sequence>
+			<xs:element name="attribute" type="attributeType"
+				maxOccurs="unbounded" minOccurs="0">
+			</xs:element>
+			<xs:element name="panel" type="paneltype"
+				maxOccurs="unbounded" minOccurs="0">
+			</xs:element>
+		</xs:sequence>
+
+		<xs:attribute name="type" type="xs:string"></xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="fieldref">
+		<xs:attribute name="name" type="xs:string"></xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="attributeType">
+		<xs:attribute name="name" type="xs:string"></xs:attribute>
+		<xs:attribute name="value" type="xs:string"></xs:attribute>
+	</xs:complexType>
+
+	<xs:simpleType name="formatpatternType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0#.-E;%',]*" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="countermodetype">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="global_counter"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="roundingmodeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="UP"/>
+			<xs:enumeration value="DOWN"/>
+			<xs:enumeration value="CEILING"/>
+			<xs:enumeration value="FLOOR"/>
+			<xs:enumeration value="HALF_UP"/>
+			<xs:enumeration value="HALF_DOWN"/>
+			<xs:enumeration value="HALF_EVEN"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

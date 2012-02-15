@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<datatypes>
+	<datatype name="status" title="Status">
+		<numfield name="groesse" title="Grösse" unit="m" default="1.70" />
+		<numfield name="gewicht" title="Gewicht" unit="kg" />
+		<calcfield name="bmi" title="BMI" places="2">
+			<var name="gewicht" source="gewicht" />
+			<var name="groesse" source="groesse" />
+			<formula interpreter="beanshell">
+				return
+				Math.round(gewicht/(groesse*groesse)*10)/10.0;
+			</formula>
+		</calcfield>
+		<numfield name="bdsys" title="Systolischer Blutdruck" unit="mm Hg" />
+		<numfield name="bddia" title="Diastolischer Blutdruck" unit="mm Hg" />
+		<numfield name="hfreq" title="Herzfrequenz" unit="1/Min" />
+		<boolfield name="hfrm" title="HF Regelmässig" />
+		<boolfield name="herger" title="Herzgeräusch" />
+		<scalefield name="arfaeh" title="Arbeitsfähigkeit" min="0"
+			max="5" default="5" />
+		<design>
+			<panel type="grid">
+				<attribute name="columns" value="1" />
+				<panel type="display">
+					<attribute name="url" value="http://www.elexis.ch" />
+					<attribute name="size" value="600,150" />
+				</panel>
+				<panel type="grid">
+					<attribute name="columns" value="3" />
+					<panel type="field">
+						<attribute name="ref" value="groesse" />
+						<attribute name="editable" value="true" />
+						<attribute name="validpattern" value="[0-9\\.]*" />
+						<attribute name="invalidmessage"
+							value="Es sind nur Zahlen und der Dezimalpunkt zulässig" />
+					</panel>
+					<panel type="field">
+						<attribute name="editable" value="true" />
+						<attribute name="ref" value="gewicht" />
+						<attribute name="validpattern" value="[0-9\\.]*" />
+						<attribute name="invalidmessage"
+							value="Es sind nur Zahlen und der Dezimalpunkt zulässig" />
+
+					</panel>
+					<panel type="field">
+						<attribute name="editable" value="false" />
+						<attribute name="ref" value="bmi" />
+					</panel>
+					<panel type="field">
+						<attribute name="editable" value="true" />
+						<attribute name="ref" value="bdsys" />
+						<attribute name="validpattern" value="[0-9]*" />
+						<attribute name="invalidmessage" value="Es sind nur ganze Zahlen zulässig" />
+
+					</panel>
+					<panel type="field">
+						<attribute name="editable" value="true" />
+						<attribute name="ref" value="bddia" />
+						<attribute name="validpattern" value="[0-9]*" />
+						<attribute name="invalidmessage" value="Es sind nur ganze Zahlen zulässig" />
+						<attribute name="size" value="30,-1" />
+
+					</panel>
+					<panel type="field">
+						<attribute name="editable" value="true" />
+						<attribute name="ref" value="hfreq" />
+						<attribute name="validpattern" value="[0-9]*" />
+						<attribute name="invalidmessage" value="Es sind nur ganze Zahlen zulässig" />
+
+					</panel>
+				</panel>
+
+				<panel type="grid">
+					<attribute name="columns" value="2" />
+					<panel type="label">
+						<attribute name="text" value="Dies ist die erste Zeile" />
+					</panel>
+					<panel type="field">
+						<attribute name="ref" value="herger" />
+					</panel>
+					<panel type="label">
+						<attribute name="text" value="Dies ist die zweite Zeile" />
+					</panel>
+
+					<panel type="field">
+						<attribute name="ref" value="arfaeh" />
+					</panel>
+				</panel>
+			</panel>
+		</design>
+	</datatype>
+
+	<datatype name="ekg" title="EKG">
+		<enumfield name="position" title="Position" default="1">
+			<option value="1" title="sitzend" />
+			<option value="2" title="liegend" />
+		</enumfield>
+		<strfield name="bemerk" title="Bemerkungen" />
+		<datafield name="teststatus" title="Teststatus" type="status" />
+	</datatype>
+
+	<datatype name="mms" title="Mini Mental Status">
+		<numfield name="subtraktion" title="Subtraktion" />
+		<numfield name="zo_wochentag" title=""/>
+		<numfield name="zo_jahr" title=""/>
+		<calcfield name="resultat" title="Resultat">
+			<var name="s" source="subtraktion" />
+			<var name="zot" source="zo_wochentag"/>
+			<var name="zoj" source="zo_jahr"/>
+			<formula interpreter="beanshell">
+				return s+zot+zoj;
+		</formula>
+		</calcfield>
+		<design>
+			<panel type="grid">
+				<attribute name="columns" value="2" />
+				<panel type="label">
+					<attribute name="text" value="Fragen Sie:'Welcher Wochentag ist heute?'"/>
+				</panel>
+				<panel type="field">
+					<attribute name="ref" value="zo_wochentag" />
+				</panel>
+				
+				<panel type="label">
+					<attribute name="text" value="Fragen Sie:'Welches Jahr haben wir?'"/>
+				</panel>
+				<panel type="field">
+					<attribute name="ref" value="zo_jahr" />
+				</panel>
+				
+				<panel type="display">
+					<attribute name="url" value="file://d:/temp/expl.html" />
+					<attribute name="size" value="400,90" />
+				</panel>
+				<panel type="field">
+					<attribute name="ref" value="subtraktion" />
+				</panel>
+				<panel type="label">
+					<attribute name="text" value="Resultat (von 30 möglichen Punkten)" />
+				</panel>
+				<panel type="field">
+					<attribute name="ref" value="resultat" />
+				</panel>
+			</panel>
+
+		</design>
+	</datatype>
+	<datatype name="ergometrie" title="Ergometrie">
+		<numfield name="pstart" title="Startleistung" unit="W" />
+		<numfield name="stgzeit" title="Steigerungszeit" unit="Min" />
+		<numfield name="deltap" title="Steigerungsleistung" unit="W" />
+		<numfield name="hfruhe" title="Herzfrequenz in Ruhe" unit="1/min" />
+		<numfield name="hfmax" title="Herzfrequenz maximal" unit="1/min" />
+		<numfield name="bdryhs" title="Systolischer Blutdruck in Ruhe"
+			unit="mm Hg" />
+		<numfield name="bdruhd" title="Diastolischer Blutdruck in Ruhe"
+			unit="mm Hg" />
+		<numfield name="bdmaxs" title="Systolischer Blutdruck maximal"
+			unit="mm Hg" />
+		<numfield name="bdmaxd" title="Diastolischer Blutdruck maximal"
+			unit="mm Hg" />
+		<calcfield name="rpp" title="RPP">
+			<var name="hfmax" source="hfmax" />
+			<var name="bdmaxs" source="bdmaxs" />
+			<formula interpreter="beanshell">
+				return hfmax*bdmaxs;
+			</formula>
+		</calcfield>
+		<datafield name="testekg" title="Testekg" type="ekg" />
+		<calcfield name="foo" title="RPP/Ruhe" places="1" unit="x">
+			<var name="bmi" source="testekg.teststatus.bmi" />
+			<formula interpreter="beanshell">
+				return bmi*2;
+			</formula>
+		</calcfield>
+	</datatype>
+	<datatype name="Uhrentest" title="Uhrentest">
+		<boolfield name="q1" title="Ist die 12 oben?"></boolfield>
+		<boolfield name="q2" title="Sind 12 Zahlen vorhanden?"></boolfield>
+		<boolfield name="q3" title="Sind 2 unterscheidbare Zeiger vorhanden?"></boolfield>
+		<boolfield name="q4" title="Stimmt die gezeichnete Zeit?"></boolfield>
+		<calcfield name="Auswertung" title="Auswertung">
+			<var name="q1" source="q1"></var>
+			<var name="q2" source="q2"></var>
+			<var name="q3" source="q3"></var>
+			<var name="q4" source="q4"></var>
+			<formula interpreter="beanshell">if(q1==true) return "ja"; else return
+				"nein";</formula>
+		</calcfield>
+	</datatype>
+</datatypes>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service:service category="feature" id="com.hilotec.elexis.messwerte.v2" name="Hilotec Messwerte V2" provider="info@hilotec.com" type="KG-Führung" version="2.0.0" xmlns:service="http://www.medelexis.ch/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.medelexis.ch/services ../medelexis-commons/rsc/service.xsd ">
+  <service:conditions>
+  	<service:roles>
+  		<service:role available="true" daysperpayment="365"
+  			name="default" priceClass="fixed-low">
+  			<service:pricePerDB amount="5.00" currency="CHF" />
+  		</service:role>
+  	</service:roles>
+  </service:conditions>
+  <service:docURL>http://www.medelexis.ch/medelexis-software/elexis-plugins/plugins-organisation/plugin-hilotec-messwerte.html</service:docURL>
+  <service:description>XML konfigurierbares Messwerte-Plugin</service:description>
+  <service:depends>ch.medelexis.nucleus</service:depends>
+</service:service>
