@@ -40,6 +40,7 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.part.ViewPart;
 
 import ch.elexis.Desk;
+import ch.elexis.Hub;
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
@@ -61,6 +62,7 @@ import com.hilotec.elexis.messwerte.v2.data.typen.IMesswertTyp;
  * 
  */
 public class MessungenUebersicht extends ViewPart implements ElexisEventListener {
+	private final boolean showPatientInfo;
 	private MessungKonfiguration config;
 	private ScrolledForm form;
 	private ArrayList<MessungstypSeite> seiten;
@@ -76,6 +78,7 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 	public MessungenUebersicht(){
 		config = MessungKonfiguration.getInstance();
 		seiten = new ArrayList<MessungstypSeite>();
+		showPatientInfo = Hub.localCfg.get(Preferences.CONFIG_PATINFO, true);
 	}
 	
 	/**
@@ -457,10 +460,13 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 	 *            Ausgewaehlter Patient oder null falls keiner ausgewaehlt ist.
 	 */
 	private void setCurPatient(Patient patient){
-		if (patient == null) {
-			form.setText(Messages.MessungenUebersicht_22);
-		} else {
-			form.setText(patient.getLabel());
+		// Patienteninfo anzeigen, falls gewuenscht
+		if (showPatientInfo) {
+			if (patient == null) {
+				form.setText(Messages.MessungenUebersicht_22);
+			} else {
+				form.setText(patient.getLabel());
+			}
 		}
 		
 		// Tabs benachrichtigen

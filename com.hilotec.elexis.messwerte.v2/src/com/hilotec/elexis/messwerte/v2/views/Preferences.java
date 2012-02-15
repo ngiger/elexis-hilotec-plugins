@@ -13,6 +13,7 @@
 
 package com.hilotec.elexis.messwerte.v2.views;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -23,14 +24,18 @@ import ch.elexis.preferences.inputs.InexistingFileOKFileFieldEditor;
 
 public class Preferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public static final String CONFIG_FILE = "findings/hilotec/configfile";
+	public static final String CONFIG_PATINFO = "findings/hilotec/patientinfo";
 	
 	public void init(IWorkbench workbench){
 		setPreferenceStore(new SettingsPreferenceStore(Hub.localCfg));
+		getPreferenceStore().setDefault(CONFIG_PATINFO, true);
 	}
 	
 	@Override
 	protected void createFieldEditors(){
 		addField(new InexistingFileOKFileFieldEditor(CONFIG_FILE, "Konfigurationsdatei",
+			getFieldEditorParent()));
+		addField(new BooleanFieldEditor(CONFIG_PATINFO, "Patienteninfo anzeigen",
 			getFieldEditorParent()));
 		
 	}
