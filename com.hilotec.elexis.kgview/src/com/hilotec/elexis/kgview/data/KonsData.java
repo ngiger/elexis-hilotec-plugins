@@ -5,7 +5,7 @@ import ch.elexis.data.PersistentObject;
 import ch.rgw.tools.TimeTool;
 
 public class KonsData extends PersistentObject {
-	public static final String VERSION = "5";
+	public static final String VERSION = "6";
 	public static final String PLUGIN_ID = "com.hilotec.elexis.kgview";
 	
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_KONSDATA";
@@ -60,7 +60,7 @@ public class KonsData extends PersistentObject {
 			+ "  Verlauf		TEXT, "
 			+ "  Roentgen		TEXT, "
 			+ "  EKG			TEXT, "
-			+ "  KonsZeit 		BIGINT, "
+			+ "  KonsZeit 		BIGINT DEFAULT 0, "
 			+ "  KonsBeginn     BIGINT  "
 			+ ");"
 			+ "INSERT INTO " + TABLENAME + " (ID, JetzLeiden) VALUES "
@@ -94,6 +94,13 @@ public class KonsData extends PersistentObject {
 			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '5' WHERE"
 			+ "  ID LIKE 'VERSION';";
 	
+	private static final String up_5to6 =
+		"ALTER TABLE " + TABLENAME
+			+ "  CHANGE KonsZeit KonsZeit BIGINT DEFAULT 0;"
+			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '5' WHERE"
+			+ "  ID LIKE 'VERSION';";
+
+	
 	private static void checkTable() {
 		KonsData check = load("VERSION");
 		if (!check.exists()) {
@@ -107,6 +114,8 @@ public class KonsData extends PersistentObject {
 				createOrModifyTable(up_3to4);
 			if (check.getJetzigesLeiden().equals("4"))
 				createOrModifyTable(up_4to5);
+			if (check.getJetzigesLeiden().equals("5"))
+				createOrModifyTable(up_5to6);
 		}
 	}
 
@@ -135,8 +144,7 @@ public class KonsData extends PersistentObject {
 
 	@Override
 	public String getLabel() {
-		Konsultation kons = Konsultation.load(getId());
-		return kons.getLabel();
+		return getKonsultation().getLabel();
 	}
 
 	@Override
@@ -206,6 +214,10 @@ public class KonsData extends PersistentObject {
 		return t.toString(TimeTool.TIME_SMALL);
 	}
 
+	public Konsultation getKonsultation() {
+		return Konsultation.load(getId());
+	}
+	
 
 	public void setJetzigesLeiden(String txt) {
 		set(FLD_JETZLEIDEN, txt);
