@@ -64,7 +64,7 @@ public class FavMedikamentListe extends ViewPart
 		GridData gd = new GridData();
 		gd.horizontalAlignment = GridData.FILL;
 		gd.grabExcessHorizontalSpace = true;
-		suche = new Text(parent, SWT.NONE);
+		suche = new Text(parent, SWT.BORDER);
 		suche.setLayoutData(gd);
 		suche.addModifyListener(new ModifyListener() {
 			@Override
