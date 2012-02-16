@@ -65,6 +65,7 @@ Rietstrasse 30
       <plugin id="ch.elexis.messages"/>
       <plugin id="ch.elexis.mysql.connector"/>
       <plugin id="ch.elexis.nl_en" fragment="true"/>
+      <plugin id="ch.elexis.omnivore"/>
       <plugin id="ch.elexis.scala.runtime"/>
       <plugin id="ch.elexis.scripting.beanshell"/>
       <plugin id="ch.elexis_test" fragment="true"/>
