@@ -971,6 +971,7 @@ public class TextPlugin implements ITextPlugin {
 			formatText(contentDom, txt);
 
 			odtSync();
+			return txt;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
