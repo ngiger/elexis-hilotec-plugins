@@ -822,12 +822,22 @@ public class TextPlugin implements ITextPlugin {
 			OdfFileDom contentDom = odt.getContentDom();
 			Text prev = (Text) pos;
 
-			Text txt = prev.splitText(prev.getLength());
-			txt.setTextContent(text);
-			txt = formatText(contentDom, txt);
-
-			// TODO: Style
-
+			TextSpanElement span = (TextSpanElement) OdfXMLFactory
+					.newOdfElement(contentDom,
+							       TextSpanElement.ELEMENT_NAME);
+			span.setTextContent(text);
+			span.setStyleName(curStyle);
+			
+			int i;
+			Text txt = prev;
+			for (i = 0; i < span.getChildNodes().getLength(); i++) {
+				Node n = span.getChildNodes().item(i);
+				if (n instanceof Text) {
+					txt = (Text) n;
+					formatText(contentDom, txt);
+				}
+			}
+			prev.getParentNode().insertBefore(span, prev.getNextSibling());
 			return txt;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1055,7 +1065,7 @@ public class TextPlugin implements ITextPlugin {
 				OdfStyle frst = (OdfStyle) OdfXMLFactory.newOdfElement(
 						contentDom, StyleStyleElement.ELEMENT_NAME);
 				frst.setStyleNameAttribute(sname);
-				frst.setStyleFamilyAttribute("paragraph");
+				frst.setStyleFamilyAttribute("text");
 				frst.setStyleParentStyleNameAttribute("Standard");
 				frst.setStyleParentStyleNameAttribute("Frame");
 				autost.appendChild(frst);
@@ -1064,12 +1074,20 @@ public class TextPlugin implements ITextPlugin {
 						.newOdfElement(contentDom,
 								StyleTextPropertiesElement.ELEMENT_NAME);
 				stp.setStyleFontNameAttribute(name);
+				
 				stp.setFoFontSizeAttribute(size + "pt");
 				stp.setStyleFontSizeAsianAttribute(size + "pt");
 				stp.setStyleFontSizeComplexAttribute(size + "pt");
+				
+				if ((style & SWT.BOLD) != 0) {
+					stp.setFoFontWeightAttribute("bold");
+				}
+				if ((style & SWT.ITALIC) != 0) {
+					stp.setFoFontStyleAttribute("italic");
+				}
+				
 				frst.appendChild(stp);
 			}
-
 			curStyle = sname;
 		} catch (Exception e) {
 			e.printStackTrace();
