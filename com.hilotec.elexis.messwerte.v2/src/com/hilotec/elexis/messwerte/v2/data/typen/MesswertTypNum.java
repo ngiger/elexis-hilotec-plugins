@@ -46,6 +46,9 @@ public class MesswertTypNum extends MesswertBase implements IMesswertTyp {
 	}
 	
 	public String erstelleDarstellungswert(Messwert messwert){
+		String val = messwert.getWert();
+		if (val.isEmpty())
+			return getDefault();
 		return df.format(Double.parseDouble(messwert.getWert()));
 	}
 	
