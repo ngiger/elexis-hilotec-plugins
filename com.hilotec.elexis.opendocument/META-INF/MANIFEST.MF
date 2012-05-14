@@ -4,7 +4,7 @@ Bundle-ClassPath: .,
  lib/odfdom.jar,
  lib/xercesImpl.jar,
  lib/xml-apis.jar
-Bundle-Version: 0.0.1
+Bundle-Version: 0.0.2
 Bundle-Name: Hilotec_OpenDocument
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.hilotec.elexis.opendocument;singleton:=true

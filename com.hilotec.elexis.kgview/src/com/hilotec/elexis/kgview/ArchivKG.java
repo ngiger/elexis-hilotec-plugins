@@ -1,5 +1,7 @@
 package com.hilotec.elexis.kgview;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -9,16 +11,22 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.hilotec.elexis.kgview.data.KonsData;
 
+import ch.elexis.Desk;
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
+import ch.elexis.actions.Messages;
 import ch.elexis.data.Fall;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
+import ch.elexis.util.ViewMenus;
 
 public class ArchivKG extends ViewPart implements ElexisEventListener {
 	public static final String ID = "com.hilotec.elexis.kgview.ArchivKG";
+	
 	ScrolledFormText text;
+	private Action actNeueKons;
+	private Action actKonsAendern;
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -40,6 +48,10 @@ public class ArchivKG extends ViewPart implements ElexisEventListener {
 		
 		// TODO: Fonts fuer text laden
 		//text.setFont("konstitel", Desk.getFont(cfgName));
+		
+		createActions();
+		ViewMenus menus = new ViewMenus(getViewSite());
+		menus.createToolbar(actNeueKons, actKonsAendern);
 		
 		// Aktuell ausgewaehlten Patienten laden
 		Patient pat = (Patient) ElexisEventDispatcher.getSelected(Patient.class);
@@ -143,4 +155,46 @@ public class ArchivKG extends ViewPart implements ElexisEventListener {
 	}
 
 	public void setFocus() {}
+	
+	private void createActions() {
+		actNeueKons = new Action(Messages.getString("GlobalActions.NewKons")) { //$NON-NLS-1$
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_NEW));
+				setToolTipText(Messages.getString("GlobalActions.NewKonsToolTip")); //$NON-NLS-1$
+			}
+			
+			@Override
+			public void run(){
+				Fall fall = (Fall)
+					ElexisEventDispatcher.getSelected(Fall.class);
+				if (fall == null || !fall.isOpen()) {
+					MessageDialog.openError(null, "Kein offener Fall ausgewählt",
+						"Um eine neue Konsultation erstellen zu können, muss "+
+						"ein offener Fall ausgewählt werden");
+					return;
+				}
+				new NeueKonsDialog(getSite().getShell(), fall).open(); 
+			}
+		};
+		actKonsAendern = new Action("Konsultations Datum/Zeit ändern") {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_EDIT));
+				setToolTipText("Konsultations Datum/Zeit ändern");
+			}
+			
+			@Override
+			public void run(){
+				Konsultation kons = (Konsultation)
+					ElexisEventDispatcher.getSelected(Konsultation.class);
+				if (kons == null || !kons.isEditable(false)) {
+					MessageDialog.openError(null, "Keine/Ungültige " +
+							"Konsultation ausgewählt",
+							"Es muss eine veränderbare Konsultation " +
+							"ausgewählt sein.");
+						return;
+				}
+				new NeueKonsDialog(getSite().getShell(), kons).open();
+			}
+		};
+	}
 }

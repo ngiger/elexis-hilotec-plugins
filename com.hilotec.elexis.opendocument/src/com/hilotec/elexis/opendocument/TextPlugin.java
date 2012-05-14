@@ -41,6 +41,7 @@ import org.odftoolkit.odfdom.doc.style.OdfStyleBackgroundImage;
 import org.odftoolkit.odfdom.doc.style.OdfStyleColumns;
 import org.odftoolkit.odfdom.doc.style.OdfStyleFontFace;
 import org.odftoolkit.odfdom.doc.style.OdfStyleGraphicProperties;
+import org.odftoolkit.odfdom.doc.style.OdfStyleParagraphProperties;
 import org.odftoolkit.odfdom.doc.style.OdfStyleTableColumnProperties;
 import org.odftoolkit.odfdom.doc.style.OdfStyleTextProperties;
 import org.odftoolkit.odfdom.doc.text.OdfTextLineBreak;
@@ -53,6 +54,7 @@ import org.odftoolkit.odfdom.dom.element.style.StyleBackgroundImageElement;
 import org.odftoolkit.odfdom.dom.element.style.StyleColumnsElement;
 import org.odftoolkit.odfdom.dom.element.style.StyleFontFaceElement;
 import org.odftoolkit.odfdom.dom.element.style.StyleGraphicPropertiesElement;
+import org.odftoolkit.odfdom.dom.element.style.StyleParagraphPropertiesElement;
 import org.odftoolkit.odfdom.dom.element.style.StyleStyleElement;
 import org.odftoolkit.odfdom.dom.element.style.StyleTableColumnPropertiesElement;
 import org.odftoolkit.odfdom.dom.element.style.StyleTextPropertiesElement;
@@ -73,13 +75,166 @@ import ch.elexis.text.ReplaceCallback;
 import ch.elexis.util.SWTHelper;
 import ch.rgw.tools.StringTool;
 
+
 public class TextPlugin implements ITextPlugin {
+	/** Internal Representation of current style */
+	private class Style {
+		final static int ALIGN =
+			SWT.LEFT | SWT.CENTER | SWT.RIGHT;
+		
+		String font = null;
+		public int flags;
+		Float size = null;
+		
+		public void setStyle(int s) {
+			flags = s;
+		}
+		
+		public void clearAlign() {
+			flags &= (~ALIGN);
+		}
+		
+		public void setAlign(int a) {
+			clearAlign();
+			flags |= a;
+		}
+		
+		public void setFont(String n, int f, float s) {
+			font = n;
+			flags = f;
+			size = s;
+		}
+		
+		private String label() {
+			MessageDigest m;
+			try {
+				String pass = "" + flags;
+				if (font != null) pass += "_" + font;
+				if (size != null) pass += "_" + size;
+				m = MessageDigest.getInstance("MD5");
+				byte[] data = pass.getBytes();
+				m.update(data, 0, data.length);
+				BigInteger i = new BigInteger(1, m.digest());
+				return String.format("%1$032X", i);
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		private void declareFont(String name) throws Exception{
+			OdfFileDom contentDom = odt.getContentDom();
+			XPath xpath = odt.getXPath();
+			
+			// Declare font face
+			OdfOfficeFontFaceDecls ffdec = (OdfOfficeFontFaceDecls) xpath
+					.evaluate("//office:font-face-decls", contentDom,
+							XPathConstants.NODE);
+
+			OdfStyleFontFace fface = (OdfStyleFontFace) ffdec.getFirstChild();
+			NodeList nl = (NodeList) xpath.evaluate(
+					"//office:font-face-decls/style:font-face[@style:name='"
+							+ font + "']", contentDom, XPathConstants.NODESET);
+			if (nl.getLength() == 0) {
+				fface = (OdfStyleFontFace) OdfXMLFactory.newOdfElement(
+						contentDom, StyleFontFaceElement.ELEMENT_NAME);
+				fface.setStyleNameAttribute(font);
+				fface.setSvgFontFamilyAttribute("'" + font + "'");
+				ffdec.appendChild(fface);
+			}
+		}
+		
+		private void createStyle(String sname, String family) {
+			try {
+				OdfFileDom contentDom = odt.getContentDom();
+				XPath xpath = odt.getXPath();
+				
+				// Create Style
+				NodeList nl = (NodeList) xpath.evaluate(
+					"//style:style[@style:name='" + sname + "']",
+					contentDom, XPathConstants.NODESET);
+				if (nl.getLength() == 0) {
+					OdfOfficeAutomaticStyles autost = (OdfOfficeAutomaticStyles) xpath
+							.evaluate("//office:automatic-styles", contentDom,
+									XPathConstants.NODE);
+
+					OdfStyle frst = (OdfStyle) OdfXMLFactory.newOdfElement(
+							contentDom, StyleStyleElement.ELEMENT_NAME);
+					frst.setStyleNameAttribute(sname);
+					frst.setStyleFamilyAttribute(family);
+					frst.setStyleParentStyleNameAttribute("Standard");
+					autost.appendChild(frst);
+
+					OdfStyleTextProperties stp = (OdfStyleTextProperties) OdfXMLFactory
+							.newOdfElement(contentDom,
+									StyleTextPropertiesElement.ELEMENT_NAME);
+					
+					if (font != null) {
+						declareFont(font);
+						stp.setStyleFontNameAttribute(font);
+					}
+					
+					if (size != null) {
+						stp.setFoFontSizeAttribute(size + "pt");
+						stp.setStyleFontSizeAsianAttribute(size + "pt");
+						stp.setStyleFontSizeComplexAttribute(size + "pt");
+					}
+					
+					if ((flags & SWT.BOLD) != 0) {
+						stp.setFoFontWeightAttribute("bold");
+					}
+					if ((flags & SWT.ITALIC) != 0) {
+						stp.setFoFontStyleAttribute("italic");
+					}
+					
+					// If we have a paragraph style we might need to apply
+					// alignment settings.
+					if ((flags & ALIGN) != 0 &&
+						family.compareTo("paragraph") == 0)
+					{
+						OdfStyleParagraphProperties pp =
+							(OdfStyleParagraphProperties)
+								OdfXMLFactory.newOdfElement(contentDom,
+								StyleParagraphPropertiesElement.ELEMENT_NAME);
+						if ((flags & SWT.LEFT) != 0) {
+							pp.setFoTextAlignAttribute("left");
+						} else if ((flags & SWT.RIGHT) != 0) {
+							pp.setFoTextAlignAttribute("right");
+						} else if ((flags & SWT.CENTER) != 0) {
+							pp.setFoTextAlignAttribute("center");
+						}
+						frst.appendChild(pp);
+					}
+					
+					frst.appendChild(stp);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		/** @return Label for paragraph style */
+		public String getParagraphLbl() {
+			String lbl = label() + "_pg";
+			createStyle(lbl, "paragraph");
+			return lbl;
+		}
+		
+		/** @return Label for text style */
+		public String getTextLbl() {
+			String lbl = label() + "_txt";
+			createStyle(lbl, "text");
+			return lbl;
+		}
+		
+	}
+	
 	private Process editor_process;
 
 	private File file;
 
 	private OdfTextDocument odt;
-	private String curStyle;
+	private Style curStyle;
 
 	private Composite comp;
 	private Label filename_label;
@@ -247,7 +402,7 @@ public class TextPlugin implements ITextPlugin {
 	private void fileValid() {
 		open_button.setEnabled(true);
 		filename_label.setText(file.getAbsolutePath());
-		curStyle = "Standard";
+		curStyle = new Style();
 	}
 
 	@Override
@@ -589,7 +744,7 @@ public class TextPlugin implements ITextPlugin {
 				
 				TextPElement tp = (TextPElement) OdfXMLFactory.newOdfElement(
 						dom, TextPElement.ELEMENT_NAME);
-				tp.setStyleName(curStyle);
+				tp.setStyleName(curStyle + "_pg");
 				tp.setTextContent(col);
 				ttce.appendChild(tp);
 
@@ -822,11 +977,14 @@ public class TextPlugin implements ITextPlugin {
 			OdfFileDom contentDom = odt.getContentDom();
 			Text prev = (Text) pos;
 
+			
+			curStyle.setAlign(adjust);
+			
 			TextSpanElement span = (TextSpanElement) OdfXMLFactory
 					.newOdfElement(contentDom,
 							       TextSpanElement.ELEMENT_NAME);
 			span.setTextContent(text);
-			span.setStyleName(curStyle);
+			span.setStyleName(curStyle.getTextLbl());
 			
 			int i;
 			Text txt = prev;
@@ -838,6 +996,7 @@ public class TextPlugin implements ITextPlugin {
 				}
 			}
 			prev.getParentNode().insertBefore(span, prev.getNextSibling());
+			curStyle.clearAlign();
 			return txt;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -911,6 +1070,8 @@ public class TextPlugin implements ITextPlugin {
 			OdfFileDom styleDom = odt.getStylesDom();
 			XPath xpath = odt.getXPath();
 
+			curStyle.setAlign(adjust);
+			
 			// Generate Styles
 			OdfStyle frst = createNewStyle("fr", contentDom, styleDom);
 			String frstyle = frst.getStyleNameAttribute();
@@ -973,13 +1134,15 @@ public class TextPlugin implements ITextPlugin {
 			OdfTextParagraph para = (OdfTextParagraph) OdfXMLFactory
 					.newOdfElement(contentDom, TextPElement.ELEMENT_NAME);
 			para.setTextContent(text);
-			para.setStyleName(curStyle);
+			para.setStyleName(curStyle.getParagraphLbl());
 			textbox.appendChild(para);
 
 			// TODO: Sauber?
 			Text txt = (Text) para.getChildNodes().item(0);
 			formatText(contentDom, txt);
 
+			curStyle.clearAlign();
+			
 			odtSync();
 			return txt;
 		} catch (Exception e) {
@@ -1008,92 +1171,13 @@ public class TextPlugin implements ITextPlugin {
 
 	}
 
-	private String styleHash(String font, int style, float size) {
-		MessageDigest m;
-		try {
-			String pass = font + "_" + style + "_" + size;
-			m = MessageDigest.getInstance("MD5");
-			byte[] data = pass.getBytes();
-			m.update(data, 0, data.length);
-			BigInteger i = new BigInteger(1, m.digest());
-			return String.format("%1$032X", i);
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	@Override
 	public boolean setFont(String name, int style, float size) {
 		if (!ensureClosed() || file == null) {
 			return false;
 		}
 
-		String sname = styleHash(name, style, size);
-
-		try {
-			OdfFileDom contentDom = odt.getContentDom();
-			XPath xpath = odt.getXPath();
-
-			// Declare font face
-			OdfOfficeFontFaceDecls ffdec = (OdfOfficeFontFaceDecls) xpath
-					.evaluate("//office:font-face-decls", contentDom,
-							XPathConstants.NODE);
-
-			OdfStyleFontFace fface = (OdfStyleFontFace) ffdec.getFirstChild();
-			NodeList nl = (NodeList) xpath.evaluate(
-					"//office:font-face-decls/style:font-face[@style:name='"
-							+ name + "']", contentDom, XPathConstants.NODESET);
-			if (nl.getLength() == 0) {
-				fface = (OdfStyleFontFace) OdfXMLFactory.newOdfElement(
-						contentDom, StyleFontFaceElement.ELEMENT_NAME);
-				fface.setStyleNameAttribute(name);
-				fface.setStyleFontPitchAttribute("variable");
-				fface.setSvgFontFamilyAttribute("'" + name + "'");
-				ffdec.appendChild(fface);
-			}
-
-			// Create Style
-			nl = (NodeList) xpath.evaluate("//style:style[@style:name='"
-					+ sname + "']", contentDom, XPathConstants.NODESET);
-			if (nl.getLength() == 0) {
-				OdfOfficeAutomaticStyles autost = (OdfOfficeAutomaticStyles) xpath
-						.evaluate("//office:automatic-styles", contentDom,
-								XPathConstants.NODE);
-
-				OdfStyle frst = (OdfStyle) OdfXMLFactory.newOdfElement(
-						contentDom, StyleStyleElement.ELEMENT_NAME);
-				frst.setStyleNameAttribute(sname);
-				frst.setStyleFamilyAttribute("text");
-				frst.setStyleParentStyleNameAttribute("Standard");
-				frst.setStyleParentStyleNameAttribute("Frame");
-				autost.appendChild(frst);
-
-				OdfStyleTextProperties stp = (OdfStyleTextProperties) OdfXMLFactory
-						.newOdfElement(contentDom,
-								StyleTextPropertiesElement.ELEMENT_NAME);
-				stp.setStyleFontNameAttribute(name);
-				
-				stp.setFoFontSizeAttribute(size + "pt");
-				stp.setStyleFontSizeAsianAttribute(size + "pt");
-				stp.setStyleFontSizeComplexAttribute(size + "pt");
-				
-				if ((style & SWT.BOLD) != 0) {
-					stp.setFoFontWeightAttribute("bold");
-				}
-				if ((style & SWT.ITALIC) != 0) {
-					stp.setFoFontStyleAttribute("italic");
-				}
-				
-				frst.appendChild(stp);
-			}
-			curStyle = sname;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-
+		curStyle.setFont(name, style, size);
 		return true;
 	}
 
@@ -1113,9 +1197,8 @@ public class TextPlugin implements ITextPlugin {
 
 	@Override
 	public boolean setStyle(int style) {
-		// System.out.println("setStyle");
-		// TODO Auto-generated method stub
-		return false;
+		curStyle.setStyle(style);
+		return true;
 	}
 
 	@Override

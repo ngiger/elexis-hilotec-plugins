@@ -256,7 +256,11 @@ public class KonsData extends PersistentObject {
 	public void setEKG(String txt) {
 		set(FLD_EKG, txt);
 	}
-	
+
+	public void setKonsBeginn(long zeit) {
+		set(FLD_KONSBEGINN, Long.toString(zeit));
+	}
+
 	public void setKonsZeit(long zeit) {
 		set(FLD_KONSZEIT, Long.toString(zeit));
 	}
