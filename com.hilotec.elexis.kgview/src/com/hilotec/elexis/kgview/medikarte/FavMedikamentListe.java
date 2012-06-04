@@ -54,6 +54,7 @@ public class FavMedikamentListe extends ViewPart
 	
 	private Action actEdit;
 	private Action actDelete;
+	private Action actCheckList;
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -169,8 +170,8 @@ public class FavMedikamentListe extends ViewPart
 		
 		// Kontextmenü für Liste
 		ViewMenus menus = new ViewMenus(getViewSite());
+		menus.createMenu(actCheckList);
 		menus.createControlContextMenu(table, actEdit, actDelete);
-		
 		refresh();
 		ElexisEventDispatcher.getInstance().addListeners(this);
 	}
@@ -207,6 +208,61 @@ public class FavMedikamentListe extends ViewPart
 		}
 	}
 
+	/**
+	 * FavMedis auf tote Medikamente pruefen, und ggf. versuchen neu zu
+	 * verlinken.
+	 */
+	private static void checkFavMediList() {
+		StringBuilder sb = new StringBuilder();
+		for (FavMedikament fm: FavMedikament.getAll()) {
+			Artikel art = fm.getArtikel();
+			// Wir interessieren uns nur fuer geloeschte Artikel
+			if (art.exists()) continue;
+			
+			String pk = art.get(Artikel.FLD_SUB_ID);
+			if (pk == null || pk.isEmpty() || pk.equals("0")) {
+				sb.append("Kann nicht verknüpft werden: ");
+				sb.append(fm.getBezeichnung());
+				sb.append("\n");
+				continue;
+			}
+			
+			Query<Artikel> aq = new Query<Artikel>(Artikel.class);
+			aq.clear();
+			aq.add(Artikel.FLD_SUB_ID, Query.EQUALS, pk);
+			List<Artikel> al = aq.execute();
+			if (al.isEmpty()) {
+				sb.append("Keine Alternative gefunden: ");
+				sb.append(fm.getBezeichnung());
+				sb.append("\n");
+				continue;
+			}
+
+			boolean rl = false;
+			for (Artikel na: al) {
+				if (SWTHelper.askYesNo("Fav. Medikamente",
+					"Soll '"+fm.getBezeichnung()+"' neu mit '" +
+					na.getName() + "' verknüpft werden?"))
+				{
+					fm.relinkTo(na);
+					rl = true;
+					break;
+				}
+			}
+			
+			if (!rl) {
+				sb.append("Medikament nicht neu verknuepft: ");
+				sb.append(fm.getBezeichnung());
+				sb.append("\n");
+			}
+		}
+		
+		if (sb.length() != 0) {
+			SWTHelper.showInfo("Favoriten Medikamenten-Listen check",
+					sb.toString());
+		}
+	}
+	
 	private void makeActions() {
 		actEdit = new Action("Bearbeiten", Action.AS_PUSH_BUTTON) {
 			@Override
@@ -236,6 +292,13 @@ public class FavMedikamentListe extends ViewPart
 					fm.delete();
 				}
 				refresh();
+			}
+		};
+		
+		actCheckList = new Action("Liste prüfen", Action.AS_PUSH_BUTTON) {
+			@Override
+			public void run() {
+				checkFavMediList();
 			}
 		};
 	}

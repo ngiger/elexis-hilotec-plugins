@@ -1,7 +1,10 @@
 package com.hilotec.elexis.kgview.data;
 
+import java.util.List;
+
 import ch.elexis.data.Artikel;
 import ch.elexis.data.PersistentObject;
+import ch.elexis.data.Query;
 
 public class FavMedikament extends PersistentObject {
 	public static final String VERSION = "2";
@@ -86,6 +89,19 @@ public class FavMedikament extends PersistentObject {
 		return load(art.getId());
 	}
 	
+	public static List<FavMedikament> getAll() {
+		Query<FavMedikament> q =
+			new Query<FavMedikament>(FavMedikament.class);
+		List<FavMedikament> fm = q.execute();
+		for (FavMedikament f: fm) {
+			if (f.getId().equals("VERSION")) {
+				fm.remove(f);
+				break;
+			}
+		}
+		return fm;
+	}
+	
 	protected FavMedikament() {}
 	
 	protected FavMedikament(final String id) {
@@ -137,5 +153,16 @@ public class FavMedikament extends PersistentObject {
 	
 	public void setEinheit(String txt) {
 		set(FLD_EINHEIT, txt);
+	}
+	
+	/**
+	 * Erstellt neues FM mit selben Eigenschaften aber neuem verknuepftem
+	 * Artikel, das original FM wird geloescht.
+	 */
+	public FavMedikament relinkTo(Artikel a) {
+		FavMedikament fm = new FavMedikament(a, getOrdnungszahl(),
+				getBezeichnung(), getZweck(), getEinheit());
+		delete();
+		return fm;
 	}
 }
