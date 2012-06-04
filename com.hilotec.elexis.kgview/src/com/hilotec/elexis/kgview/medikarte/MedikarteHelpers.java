@@ -13,6 +13,7 @@ import ch.rgw.tools.TimeTool;
 
 public class MedikarteHelpers {
 	private final static String PRESC_EI_ORD = "hilotec:ordnungszahl";
+	private final static String PRESC_EI_ZWECK = "hilotec:zweck";
 	/**
 	 * Medikation auf der Medikarte des Patienten zusammensuchen.
 	 * Wenn !alle, dann wird nur die noch aktuelle Medikation zurueckgegeben.
@@ -83,6 +84,43 @@ public class MedikarteHelpers {
 	public static void setOrdnungszahl(Prescription presc, int ord) {
 		Map ht = presc.getMap(Prescription.FLD_EXTINFO);
 		ht.put(PRESC_EI_ORD, ord);
+		presc.setMap(Prescription.FLD_EXTINFO, ht);
+	}
+	
+	/**
+	 * Zweck fuer Verschreibung holen
+	 */
+	@SuppressWarnings("rawtypes")
+	public static String getPZweck(Prescription presc) {
+		Map ht = presc.getMap(Prescription.FLD_EXTINFO);
+		
+		// Ordnungszahl der Verschreibung
+		if (ht.containsKey(PRESC_EI_ZWECK))
+			return (String) ht.get(PRESC_EI_ZWECK);
+		
+		// Standard fuers Medikament
+		FavMedikament fm = FavMedikament.load(presc.getArtikel());
+		if (fm != null)
+			return fm.getZweck();
+		
+		return "";
+	}
+	
+	/**
+	 * Ordnungszahl fuer Verschreibung setzen
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void setPZweck(Prescription presc, String zweck) {
+		Map ht = presc.getMap(Prescription.FLD_EXTINFO);
+		
+		// Wenns dem Standard entspricht speichern wir den Eintrag nicht
+		FavMedikament fm = FavMedikament.load(presc.getArtikel());
+		if (fm != null && fm.getZweck().equals(zweck)) {
+			ht.remove(PRESC_EI_ZWECK);
+		} else {
+			ht.put(PRESC_EI_ZWECK, zweck);
+		}
+		
 		presc.setMap(Prescription.FLD_EXTINFO, ht);
 	}
 }

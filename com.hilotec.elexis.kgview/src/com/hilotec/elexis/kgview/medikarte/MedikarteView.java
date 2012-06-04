@@ -236,7 +236,8 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			ti.setText(i++, dosierung[3]);
 			
 			ti.setText(i++, fm.getEinheit());
-			ti.setText(i++, fmtVolltext(fm.getZweck()));
+			String z = MedikarteHelpers.getPZweck(p);
+			ti.setText(i++, fmtVolltext(z));
 			ti.setText(i++, p.getBemerkung());
 			
 			ti.setText(i++, p.getBeginDate());

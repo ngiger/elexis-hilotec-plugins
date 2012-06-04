@@ -41,6 +41,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 	private Text tVon;
 	private Text tBis;
 	private Combo cEV;
+	private Text tZweck;
 	
 
 	public MedikarteEintragDialog(Shell parentShell, Patient patient, FavMedikament med) {
@@ -119,12 +120,12 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			evMap.put(ev, evIndex++);
 		}
 
-		// Zweck, Einheit, rein informativ
+		// Zweck
 		Label lZweck = new Label(comp, 0);
 		lZweck.setText("Zweck");
-		Label lZweckText = new Label(comp, SWT.BORDER);
-		lZweckText.setText(fm.getZweck());
+		tZweck = SWTHelper.createText(comp, 2, 0);
 		
+		// Einheit, rein informativ
 		Label lEinheit = new Label(comp, 0);
 		lEinheit.setText("Einheit");
 		Label lEinheitText = new Label(comp, SWT.BORDER);
@@ -142,6 +143,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			tDoMittag.setText(dos[1]);
 			tDoAbend.setText(dos[2]);
 			tDoNacht.setText(dos[3]);
+			tZweck.setText(MedikarteHelpers.getPZweck(presc));
 			
 			// Korrekte Einnahmevorschrift auswaehlen
 			String ev = presc.getBemerkung();
@@ -159,6 +161,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			tDoMittag.setText("0");
 			tDoAbend.setText("0");
 			tDoNacht.setText("0");
+			tZweck.setText(fm.getZweck());;
 		}
 		
 		return comp;
@@ -254,6 +257,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		presc.setEndDate(tBis.getText());
 		MedikarteHelpers.setOrdnungszahl(presc,
 				Integer.parseInt(tOrd.getText()));
+		MedikarteHelpers.setPZweck(presc, tZweck.getText());
 		close();
 	}
 }

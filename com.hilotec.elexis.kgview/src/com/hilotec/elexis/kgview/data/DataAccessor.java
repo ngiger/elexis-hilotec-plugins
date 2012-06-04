@@ -147,7 +147,7 @@ public class DataAccessor implements IDataAccess {
 				String[] row = new String[7];
 				row[0] = fm.getBezeichnung();
 				row[5] = fm.getEinheit();
-				row[6] = fm.getZweck();
+				row[6] = MedikarteHelpers.getPZweck(p);
 				row[1] = dosierung[0];
 				row[2] = dosierung[1];
 				row[3] = dosierung[2];
