@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
+import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.data.FavMedikament;
 
 import ch.elexis.actions.ElexisEvent;
@@ -98,9 +99,11 @@ public class FavMedikamentListe extends ViewPart
 		tc.setText("Einheit");
 		tc.setWidth(40);
 		
-		tc = new TableColumn(table, 0);
-		tc.setText("Ordnungszahl");
-		tc.setWidth(40);
+		if (Preferences.getOrdnungszahlInFML()) {
+			tc = new TableColumn(table, 0);
+			tc.setText("Ordnungszahl");
+			tc.setWidth(40);
+		}
 		
 		// Drop Target um neue Eintraege zu erstellen
 		new PersistentObjectDropTarget(table,
@@ -198,7 +201,9 @@ public class FavMedikamentListe extends ViewPart
 			ti.setText(0, med.getBezeichnung());
 			ti.setText(1, fmtVolltext(med.getZweck()));
 			ti.setText(2, med.getEinheit());
-			ti.setText(3, Integer.toString(med.getOrdnungszahl()));
+			if (Preferences.getOrdnungszahlInFML()) {
+				ti.setText(3, Integer.toString(med.getOrdnungszahl()));
+			}
 		}
 	}
 

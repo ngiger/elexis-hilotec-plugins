@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.data.FavMedikament;
 
 import ch.elexis.data.Artikel;
@@ -54,9 +55,11 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 		Label lMed = new Label(comp, 0);
 		lMed.setText(artikel.getName());
 		
-		Label lOrd = new Label(comp, 0);
-		lOrd.setText("Ordnungszahl");
-		tOrdnungszahl = SWTHelper.createText(comp, 1, 0);
+		if (Preferences.getOrdnungszahlInFML()) {
+			Label lOrd = new Label(comp, 0);
+			lOrd.setText("Ordnungszahl");
+			tOrdnungszahl = SWTHelper.createText(comp, 1, 0);
+		}
 		
 		Label lBez = new Label(comp, 0);
 		lBez.setText("Bezeichnung");
@@ -77,15 +80,18 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 		lEinheit.setText("Einheit");
 		tEinheit = SWTHelper.createText(comp, 1, 0);
 		
+		String ordzahl;
 		if (fm != null) {
-			tOrdnungszahl.setText(Integer.toString(fm.getOrdnungszahl()));
+			ordzahl = Integer.toString(fm.getOrdnungszahl());
 			tBezeichnung.setText(fm.getBezeichnung());
 			tZweck.setText(fm.getZweck());
 			tEinheit.setText(fm.getEinheit());
 		} else {
-			tOrdnungszahl.setText("0");
+			ordzahl = "0";
 			tBezeichnung.setText(artikel.getName());
 		}
+		
+		if (tOrdnungszahl != null) tOrdnungszahl.setText(ordzahl);
 		
 		return comp;
 	}
@@ -95,7 +101,9 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 		// Ordnungszahl parsen und pruefen
 		int ord = 0;
 		try {
-			ord = Integer.parseInt(tOrdnungszahl.getText());
+			if (tOrdnungszahl != null) {
+				ord = Integer.parseInt(tOrdnungszahl.getText());
+			}
 		} catch (NumberFormatException nfe) {
 			setErrorMessage("Ordnungszahl muss eine Ganzzahl sein!");
 			return;
@@ -107,7 +115,7 @@ public class FavMedikamentDialog extends TitleAreaDialog {
 			System.out.println("Created: ");
 			System.out.println(fm);
 		} else {
-			fm.setOrdnungszahl(ord);
+			if (tOrdnungszahl != null) fm.setOrdnungszahl(ord);
 			fm.setBezeichnung(tBezeichnung.getText());
 			fm.setZweck(tZweck.getText());
 			fm.setEinheit(tEinheit.getText());

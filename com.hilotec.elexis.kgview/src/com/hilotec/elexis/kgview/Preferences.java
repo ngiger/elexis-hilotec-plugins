@@ -1,5 +1,6 @@
 package com.hilotec.elexis.kgview;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.swt.SWT;
@@ -18,6 +19,7 @@ import ch.elexis.preferences.inputs.MultilineFieldEditor;
 public class Preferences extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
 	public static final String CFG_EVLISTE = "hilotec/kgview/einnahmevorschriften";
+	public static final String CFG_FLORDZ = "hilotec/kgview/ordnungszahlfavliste";
 	public static final String CFG_AKG_HEARTBEAT = "hilotec/kgview/archivkgheartbaeat";
 
 	public Preferences() {
@@ -33,6 +35,8 @@ public class Preferences extends FieldEditorPreferencePage implements
 	protected void createFieldEditors() {
 		addField(new MultilineFieldEditor(CFG_EVLISTE, "Einnahmevorschriften",
 				5, SWT.V_SCROLL, true, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(CFG_FLORDZ,
+			    "Ordnungszahl in FML anzeigen", getFieldEditorParent()));
 		addField(new IntegerFieldEditor(CFG_AKG_HEARTBEAT,
 				"Archiv KG Heartbeat", getFieldEditorParent()));
 	}
@@ -43,6 +47,15 @@ public class Preferences extends FieldEditorPreferencePage implements
 	public static String[] getEinnahmevorschriften() {
 		String s = Hub.mandantCfg.get(CFG_EVLISTE, "");
 		return s.split(",");
+	}
+	
+	/**
+	 * @return
+	 */
+	public static boolean getOrdnungszahlInFML() {
+		boolean oz = Hub.mandantCfg.get(CFG_FLORDZ, false);
+		System.out.println(oz);
+		return oz;
 	}
 	
 	/**
