@@ -12,21 +12,27 @@ import org.eclipse.ui.part.ViewPart;
 import com.hilotec.elexis.kgview.data.KonsData;
 
 import ch.elexis.Desk;
+import ch.elexis.Hub;
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
 import ch.elexis.actions.Messages;
+import ch.elexis.actions.Heartbeat.HeartListener;
 import ch.elexis.data.Fall;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
 import ch.elexis.util.ViewMenus;
 
-public class ArchivKG extends ViewPart implements ElexisEventListener {
+public class ArchivKG extends ViewPart implements ElexisEventListener,
+		HeartListener
+{
 	public static final String ID = "com.hilotec.elexis.kgview.ArchivKG";
 	
 	ScrolledFormText text;
 	private Action actNeueKons;
 	private Action actKonsAendern;
+	private Action actAutoAkt;
+	//private Action
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -51,7 +57,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener {
 		
 		createActions();
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actNeueKons, actKonsAendern);
+		menus.createToolbar(actNeueKons, actKonsAendern, actAutoAkt);
 		
 		// Aktuell ausgewaehlten Patienten laden
 		Patient pat = (Patient) ElexisEventDispatcher.getSelected(Patient.class);
@@ -196,5 +202,30 @@ public class ArchivKG extends ViewPart implements ElexisEventListener {
 				new NeueKonsDialog(getSite().getShell(), kons).open();
 			}
 		};
+		final ArchivKG akg = this;
+		actAutoAkt = new Action("Automatisch aktualisieren", Action.AS_CHECK_BOX) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_REFRESH));
+				setToolTipText("Automatisch aktualisieren");
+			}
+			
+			@Override
+			public void run() {
+				boolean ch = isChecked();
+				if (ch) Hub.heart.addListener(akg);
+				else Hub.heart.removeListener(akg);
+			}
+		};
+	}
+
+	@Override
+	public void dispose() {
+		if (actAutoAkt.isChecked()) Hub.heart.removeListener(this);
+		super.dispose();
+	}
+	
+	@Override
+	public void heartbeat() {
+		loadPatient(ElexisEventDispatcher.getSelectedPatient());
 	}
 }
