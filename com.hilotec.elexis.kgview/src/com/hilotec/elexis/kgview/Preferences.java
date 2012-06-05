@@ -54,7 +54,6 @@ public class Preferences extends FieldEditorPreferencePage implements
 	 */
 	public static boolean getOrdnungszahlInFML() {
 		boolean oz = Hub.mandantCfg.get(CFG_FLORDZ, false);
-		System.out.println(oz);
 		return oz;
 	}
 	

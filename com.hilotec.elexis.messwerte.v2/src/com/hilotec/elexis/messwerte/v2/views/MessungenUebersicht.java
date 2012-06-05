@@ -275,9 +275,6 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 					
 					if (!messungsdatum.equalsIgnoreCase(newdatum)) {
 						// Nur wenn Messung nich vom selben Tag wie heute!!
-						System.out.println(messung.getDatum());
-						System.out.println(date.toString(TimeTool.DATE_GER));
-						
 						Messung messungnew = new Messung(messung.getPatient(), messung.getTyp());
 						messungnew.setDatum(date.toString(TimeTool.DATE_GER));
 						
