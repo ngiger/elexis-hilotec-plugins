@@ -149,6 +149,8 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		sb.append("<b>Konsultation</b> ");
 		sb.append("<a href=\"kons:" + k.getId() + "\">");
 		sb.append(k.getDatum() + " " + kd.getKonsBeginn() + "</a>");
+		sb.append(" " + k.getFall().getAbrechnungsSystem());
+		sb.append(" (" + k.getAuthor() + ")");
 		sb.append("<br/>");
 		
 		addParagraph("Jetziges Leiden", kd.getJetzigesLeiden(),
