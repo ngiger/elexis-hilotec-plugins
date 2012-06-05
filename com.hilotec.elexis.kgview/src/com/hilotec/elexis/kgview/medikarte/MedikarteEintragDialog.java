@@ -176,8 +176,10 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 	 * Format einer Dosierung ueberpruefen.
 	 */
 	private boolean validateDosierung(String s) {
+		s = s.toUpperCase();
+		
 		// Spezielle Dosierung auf Beiblatt
-		if (s.equals("x"))
+		if (s.equals("X"))
 			return true;
 
 		// Ganzzahlige Dosierung
@@ -244,6 +246,7 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		String dosierung =
 			tDoMorgen.getText() + "-" + tDoMittag.getText() + "-" +
 			tDoAbend.getText() + "-" + tDoNacht.getText();
+		dosierung = dosierung.toUpperCase();
 		String bemerkung = cEV.getItem(cEV.getSelectionIndex());
 		
 		if (presc == null) {
