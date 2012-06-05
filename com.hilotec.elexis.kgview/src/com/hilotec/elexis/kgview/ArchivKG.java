@@ -37,7 +37,9 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	private Action actNeueKons;
 	private Action actKonsAendern;
 	private Action actAutoAkt;
-	//private Action
+	private Action actSortierungUmk;
+	private boolean sortRev;
+
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -57,12 +59,15 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 			}
 		});
 		
+		sortRev = false;
+		
 		// TODO: Fonts fuer text laden
 		//text.setFont("konstitel", Desk.getFont(cfgName));
 		
 		createActions();
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actNeueKons, actKonsAendern, actAutoAkt);
+		menus.createToolbar(actNeueKons, actKonsAendern, actAutoAkt,
+				actSortierungUmk);
 		
 		// Aktuell ausgewaehlten Patienten laden
 		Patient pat = (Patient) ElexisEventDispatcher.getSelected(Patient.class);
@@ -74,7 +79,9 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	/**
 	 * @return Sortierte Liste aller Konsultation dieses Patienten
 	 */
-	private ArrayList<Konsultation> getKonsultationen(Patient pat) {
+	private ArrayList<Konsultation> getKonsultationen(Patient pat,
+			final boolean reversed)
+	{
 		// Konsultationen sammeln
 		ArrayList<Konsultation> konsliste = new ArrayList<Konsultation>();
 		for (Fall f: pat.getFaelle()) {
@@ -94,7 +101,11 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 				TimeTool tt1 = new TimeTool(k1.getDatum());
 				tt1.setTime(new TimeTool(kd1.getKonsBeginn()));
 				
-				return tt1.compareTo(tt0);
+				if (reversed) {
+					return tt0.compareTo(tt1);
+				} else {
+					return tt1.compareTo(tt0);
+				}
 			}
 		};
 		Collections.sort(konsliste, comp);
@@ -114,11 +125,18 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		// Inhalt fuer Textfeld generieren
 		StringBuilder sb = new StringBuilder();
 		sb.append("<form>");
-		for (Konsultation k: getKonsultationen(pat)) {
+		for (Konsultation k: getKonsultationen(pat, sortRev)) {
 			processKonsultation(k, sb);
 		}
 		sb.append("</form>");
 		text.setText(sb.toString());
+	}
+	
+	/**
+	 * Neu laden
+	 */
+	private void refresh() {
+		loadPatient(ElexisEventDispatcher.getSelectedPatient());
 	}
 	
 	/**
@@ -246,6 +264,19 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 				else Hub.heart.removeListener(akg);
 			}
 		};
+		
+		actSortierungUmk = new Action("Sortierung umkehren", Action.AS_CHECK_BOX) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_ARROWUP));
+				setToolTipText("Sortierung umkehren, älteste zuoberst");
+			}
+			
+			@Override
+			public void run() {
+				sortRev = isChecked();
+				refresh();
+			}
+		};
 	}
 
 	@Override
@@ -256,6 +287,6 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	
 	@Override
 	public void heartbeat() {
-		loadPatient(ElexisEventDispatcher.getSelectedPatient());
+		refresh();
 	}
 }
