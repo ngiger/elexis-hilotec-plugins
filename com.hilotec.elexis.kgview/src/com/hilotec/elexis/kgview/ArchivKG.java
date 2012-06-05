@@ -1,5 +1,9 @@
 package com.hilotec.elexis.kgview;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.layout.FillLayout;
@@ -22,6 +26,7 @@ import ch.elexis.data.Fall;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
 import ch.elexis.util.ViewMenus;
+import ch.rgw.tools.TimeTool;
 
 public class ArchivKG extends ViewPart implements ElexisEventListener,
 		HeartListener
@@ -67,6 +72,37 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	}
 
 	/**
+	 * @return Sortierte Liste aller Konsultation dieses Patienten
+	 */
+	private ArrayList<Konsultation> getKonsultationen(Patient pat) {
+		// Konsultationen sammeln
+		ArrayList<Konsultation> konsliste = new ArrayList<Konsultation>();
+		for (Fall f: pat.getFaelle()) {
+			for (Konsultation k: f.getBehandlungen(true)) {
+				konsliste.add(k);
+			}
+		}
+		
+		// Konsultationen sortieren
+		Comparator<Konsultation> comp = new Comparator<Konsultation>() {
+			public int compare(Konsultation k0, Konsultation k1) {
+				KonsData kd0 = KonsData.load(k0);
+				TimeTool tt0 = new TimeTool(k0.getDatum());
+				tt0.setTime(new TimeTool(kd0.getKonsBeginn()));
+				
+				KonsData kd1 = KonsData.load(k1);
+				TimeTool tt1 = new TimeTool(k1.getDatum());
+				tt1.setTime(new TimeTool(kd1.getKonsBeginn()));
+				
+				return tt1.compareTo(tt0);
+			}
+		};
+		Collections.sort(konsliste, comp);
+		
+		return konsliste;
+	}
+	
+	/**
 	 * ArchivKG zum angegebenen Patienten laden.
 	 */
 	private void loadPatient(Patient pat) {
@@ -75,19 +111,13 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 			return;
 		}
 		
+		// Inhalt fuer Textfeld generieren
 		StringBuilder sb = new StringBuilder();
 		sb.append("<form>");
-		
-		Fall[] faelle = pat.getFaelle();
-		for (Fall f: faelle) {
-			Konsultation[] konsultationen = f.getBehandlungen(true);
-			for (Konsultation k: konsultationen) {
-				processKonsultation(k, sb);
-			}
+		for (Konsultation k: getKonsultationen(pat)) {
+			processKonsultation(k, sb);
 		}
-		
 		sb.append("</form>");
-		//browser.setText(sb.toString());
 		text.setText(sb.toString());
 	}
 	
