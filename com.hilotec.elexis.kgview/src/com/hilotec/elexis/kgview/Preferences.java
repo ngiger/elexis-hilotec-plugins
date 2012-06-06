@@ -48,8 +48,6 @@ public class Preferences extends FieldEditorPreferencePage implements
 				"Archiv KG Scroll Distanz hoch [px]", getFieldEditorParent()));
 		addField(new IntegerFieldEditor(CFG_AKG_SCROLLDIST_DOWN,
 				"Archiv KG Scroll Distanz runter [px]", getFieldEditorParent()));
-		addField(new BooleanFieldEditor(CFG_FLORDZ,
-			    "Ordnungszahl in FML anzeigen", getFieldEditorParent()));
 	}
 
 	/**
