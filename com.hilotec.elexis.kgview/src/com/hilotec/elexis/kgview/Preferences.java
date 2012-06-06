@@ -21,6 +21,9 @@ public class Preferences extends FieldEditorPreferencePage implements
 	public static final String CFG_EVLISTE = "hilotec/kgview/einnahmevorschriften";
 	public static final String CFG_FLORDZ = "hilotec/kgview/ordnungszahlfavliste";
 	public static final String CFG_AKG_HEARTBEAT = "hilotec/kgview/archivkgheartbaeat";
+	public static final String CFG_AKG_SCROLLPERIOD = "hilotec/kgview/archivkgscrollperiod";
+	public static final String CFG_AKG_SCROLLDIST_UP = "hilotec/kgview/archivkgscrolldistup";
+	public static final String CFG_AKG_SCROLLDIST_DOWN = "hilotec/kgview/archivkgscrolldistdown";
 
 	public Preferences() {
 		super(GRID);
@@ -39,6 +42,14 @@ public class Preferences extends FieldEditorPreferencePage implements
 			    "Ordnungszahl in FML anzeigen", getFieldEditorParent()));
 		addField(new IntegerFieldEditor(CFG_AKG_HEARTBEAT,
 				"Archiv KG Heartbeat", getFieldEditorParent()));
+		addField(new IntegerFieldEditor(CFG_AKG_SCROLLPERIOD,
+				"Archiv KG Scroll Periode [ms]", getFieldEditorParent()));
+		addField(new IntegerFieldEditor(CFG_AKG_SCROLLDIST_UP,
+				"Archiv KG Scroll Distanz hoch [px]", getFieldEditorParent()));
+		addField(new IntegerFieldEditor(CFG_AKG_SCROLLDIST_DOWN,
+				"Archiv KG Scroll Distanz runter [px]", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(CFG_FLORDZ,
+			    "Ordnungszahl in FML anzeigen", getFieldEditorParent()));
 	}
 
 	/**
@@ -63,6 +74,33 @@ public class Preferences extends FieldEditorPreferencePage implements
 	 */
 	public int getArchivKGHeartbeat() {
 		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_HEARTBEAT, "10"));
+		if (n < 1) n = 1;
+		return n;
+	}
+	
+	/**
+	 * @return Fuer automatisches Scrollen in ArchivKG, Periode in Millisekunden.
+	 */
+	public static int getArchivKGScrollPeriod() {
+		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_SCROLLPERIOD, "200"));
+		if (n < 50) n = 50;
+		return n;
+	}
+	
+	/**
+	 * @return Fuer automatisches Scrollen in ArchivKG, Scrolldistanz in Pixel
+	 */
+	public static int getArchivKGScrollDistUp() {
+		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_SCROLLDIST_UP, "5"));
+		if (n < 1) n = 1;
+		return n;
+	}
+	
+	/**
+	 * @return Fuer automatisches Scrollen in ArchivKG, Scrolldistanz in Pixel
+	 */
+	public static int getArchivKGScrollDistDown() {
+		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_SCROLLDIST_DOWN, "5"));
 		if (n < 1) n = 1;
 		return n;
 	}

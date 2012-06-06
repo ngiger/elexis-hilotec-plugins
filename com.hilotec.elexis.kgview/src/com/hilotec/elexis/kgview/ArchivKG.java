@@ -3,13 +3,24 @@ package com.hilotec.elexis.kgview;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
+import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.eclipse.ui.part.ViewPart;
 
@@ -27,6 +38,113 @@ import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
 import ch.elexis.util.ViewMenus;
 import ch.rgw.tools.TimeTool;
+
+/**
+ * Helper-Klasse fuers automatische scrollen mit anpassbarer Geschwindigkeit.
+ */
+class ScrollHelper implements KeyListener, DisposeListener, FocusListener
+{
+	enum Direction { UP, DOWN };
+	
+	private ScrolledFormText comp;
+	private Direction dir;
+	private Timer timer;
+	private final int scPeriod;
+	private final int scDistUp;
+	private final int scDistDown;
+	
+	public ScrollHelper(ScrolledFormText comp) {
+		this.comp = comp;
+		
+		FormText ft = comp.getFormText();
+		ft.addDisposeListener(this);
+		ft.addKeyListener(this);
+		ft.addFocusListener(this);
+		
+		scPeriod = Preferences.getArchivKGScrollPeriod();
+		scDistUp = Preferences.getArchivKGScrollDistUp();
+		scDistDown = Preferences.getArchivKGScrollDistDown();
+	}
+
+	/**
+	 * Automatisches scrollen starten. Als Richtung wird 'dir' verwendet.
+	 */
+	private void start() {
+		if (timer != null) return;
+		
+		TimerTask tt = new TimerTask() {
+			@Override
+			public void run() {
+				Desk.asyncExec(new Runnable() {
+					public void run() { tickInGUI(); }});
+			}
+		};
+		
+		timer = new Timer();
+		timer.scheduleAtFixedRate(tt, 0, scPeriod);
+	}
+	
+	/**
+	 * Automatisches scrollen stoppen.
+	 */
+	private void stop() {
+		if (timer != null) {
+			timer.cancel();
+			timer = null;
+		}
+	}
+	
+	/**
+	 * Wird bei jedem Timer-Tick aufgerufen, scrollt um die festgelegte Distanz.
+	 */
+	public void tickInGUI() {
+		Point p = comp.getOrigin();
+		Point q = comp.getContent().getSize();
+		
+		if (dir == Direction.DOWN && p.y < q.y) {
+			p.y = Math.min(q.y, p.y + scDistDown);
+		} else if (dir == Direction.UP && p.y > 0) {
+			p.y = Math.max(0, p.y - scDistUp);
+		}
+		comp.setOrigin(p);
+	}
+
+	/*
+	 * Keyboard events 
+	 */
+	
+	public void keyReleased(KeyEvent e) {
+		if (e.keyCode == SWT.ARROW_UP || e.keyCode == SWT.ARROW_DOWN) {
+			stop();
+		}
+	}
+
+	public void keyPressed(KeyEvent e) {
+		if (e.keyCode == SWT.ARROW_DOWN) {
+			dir = Direction.DOWN;
+			start();
+		} else if (e.keyCode == SWT.ARROW_UP) {
+			dir = Direction.UP;
+			start();
+		}
+		
+	}
+	
+	/*
+	 * Events to react to
+	 */
+	public void widgetDisposed(DisposeEvent e) {
+		stop();
+	}
+
+	public void focusGained(FocusEvent e) { }
+
+	public void focusLost(FocusEvent e) {
+		stop();
+	}
+}
+
+
 
 public class ArchivKG extends ViewPart implements ElexisEventListener,
 		HeartListener
@@ -58,6 +176,8 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 				}
 			}
 		});
+		//text.getVerticalBar().setIncrement(100);
+		new ScrollHelper(text);
 		
 		sortRev = false;
 		
