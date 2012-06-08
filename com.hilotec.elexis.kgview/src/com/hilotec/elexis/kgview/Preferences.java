@@ -20,6 +20,7 @@ public class Preferences extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
 	public static final String CFG_EVLISTE = "hilotec/kgview/einnahmevorschriften";
 	public static final String CFG_FLORDZ = "hilotec/kgview/ordnungszahlfavliste";
+	public static final String CFG_MK_INCSTOP = "hilotec/kgview/mkincludestopdate";
 	public static final String CFG_AKG_HEARTBEAT = "hilotec/kgview/archivkgheartbaeat";
 	public static final String CFG_AKG_SCROLLPERIOD = "hilotec/kgview/archivkgscrollperiod";
 	public static final String CFG_AKG_SCROLLDIST_UP = "hilotec/kgview/archivkgscrolldistup";
@@ -40,6 +41,8 @@ public class Preferences extends FieldEditorPreferencePage implements
 				5, SWT.V_SCROLL, true, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(CFG_FLORDZ,
 			    "Ordnungszahl in FML anzeigen", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(CFG_MK_INCSTOP,
+			    "In Medikarte bis&mit Stoppdatum anzeigen?", getFieldEditorParent()));
 		addField(new IntegerFieldEditor(CFG_AKG_HEARTBEAT,
 				"Archiv KG Heartbeat", getFieldEditorParent()));
 		addField(new IntegerFieldEditor(CFG_AKG_SCROLLPERIOD,
@@ -66,6 +69,14 @@ public class Preferences extends FieldEditorPreferencePage implements
 		return oz;
 	}
 	
+	/**
+	 * @return Sollen in der gefilterten Medikarteansicht auch Medikament
+	 * angezeigt werden, die das aktuelle Datum als Stoppdatum haben?
+	 */
+	public static boolean getMedikarteStopdatumInkl() {
+		return Hub.mandantCfg.get(CFG_MK_INCSTOP, false);
+	}
+
 	/**
 	 * @return Heartbeat abstand in Sekunden, fuer die Aktualisierung der
 	 *         ArchivKG-Ansicht.

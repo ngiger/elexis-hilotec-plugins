@@ -3,6 +3,7 @@ package com.hilotec.elexis.kgview.medikarte;
 import java.util.List;
 import java.util.Map;
 
+import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.data.FavMedikament;
 
 import ch.elexis.data.Patient;
@@ -27,7 +28,11 @@ public class MedikarteHelpers {
 		if (!alle) {
 			qbe.startGroup();
 			String today = new TimeTool().toString(TimeTool.DATE_COMPACT);
-			qbe.add(Prescription.DATE_UNTIL, Query.GREATER_OR_EQUAL, today);
+			if (Preferences.getMedikarteStopdatumInkl()) {
+				qbe.add(Prescription.DATE_UNTIL, Query.GREATER_OR_EQUAL, today);
+			} else {
+				qbe.add(Prescription.DATE_UNTIL, Query.GREATER, today);
+			}
 			qbe.or();
 			qbe.add(Prescription.DATE_UNTIL, StringTool.leer, null);
 			qbe.or();
