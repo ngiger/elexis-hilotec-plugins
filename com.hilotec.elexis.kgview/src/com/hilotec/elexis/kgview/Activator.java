@@ -13,18 +13,25 @@
 
 package com.hilotec.elexis.kgview;
 
+import java.util.List;
+
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import ch.elexis.Hub;
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
+import ch.elexis.data.Prescription;
+import ch.elexis.data.Query;
 
 /**
  * The activator class controls the plug-in life cycle
  */
 public class Activator extends AbstractUIPlugin {
+	// Einstellung fuer Plugin-Versionsinfos
+	private static final String VERSION_SETTING = "hilotec/kgview/pluginversion";
 	
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.hilotec.elexis.kgview";
@@ -49,6 +56,14 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		
+		// Falls noetig Dosierungen von Verschreibungen konvertieren
+		int ver = Hub.globalCfg.get(VERSION_SETTING, 0);
+		if (ver < 1) {
+			System.out.println("Update");
+			updateDosierungen();
+			Hub.globalCfg.set(VERSION_SETTING, 1);
+		}
+		
 		// Workaround fuer Selektionsevents bei Konsultationen
 		psl = new MyPatSelListener();
 	}
@@ -72,6 +87,44 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static Activator getDefault(){
 		return plugin;
+	}
+	
+	private void updateDosierungen() {
+		Query<Prescription> q = new Query<Prescription>(Prescription.class);
+		List<Prescription> pl = q.execute();
+		for (Prescription p : pl) {
+			try {
+				String[] parts = p.getDosis().split("-");
+			
+				if (parts == null || parts.length != 4) {
+					//System.out.println("skip");
+					continue;
+				}
+				for (int i = 0; i < 4; i++) {
+					String d = parts[i];
+					if (d.equals("x")) {
+						parts[i] = "X";
+						break;
+					}
+					
+					// Brueche kuerzen
+					if (d.matches("[0-9]+/[0-9]+")) {
+						String[] dp = d.split("/");
+						int z = Integer.parseInt(dp[0]);
+						int n = Integer.parseInt(dp[1]);
+						if (z > n) {
+							int g = z / n;
+							z %= n;
+							parts[i] = g + " " + z + "/" + n;
+						}
+						
+					}
+				}
+				p.setDosis(parts[0]+"-"+parts[1]+"-"+parts[2]+"-"+parts[3]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	
