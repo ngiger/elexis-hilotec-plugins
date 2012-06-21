@@ -274,7 +274,12 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		}
 		sb.append("<a href=\"kons:" + k.getId() + "\">");
 		sb.append(k.getDatum() + " " + kd.getKonsBeginn() + "</a>");
-		sb.append(" " + k.getFall().getAbrechnungsSystem());
+		
+		// FIXME: Warum ist das noetig?
+		if  (k.getFall() != null) {
+			sb.append(" " + k.getFall().getAbrechnungsSystem());
+		}
+		
 		sb.append(" (" + k.getAuthor() + ")");
 		sb.append("<br/>");
 		
