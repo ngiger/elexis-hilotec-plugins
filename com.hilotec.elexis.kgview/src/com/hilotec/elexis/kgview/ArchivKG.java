@@ -23,6 +23,7 @@ import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import com.hilotec.elexis.kgview.data.KonsData;
 
@@ -59,6 +60,7 @@ class ScrollHelper implements KeyListener, DisposeListener, FocusListener
 		FormText ft = comp.getFormText();
 		ft.addDisposeListener(this);
 		ft.addKeyListener(this);
+		comp.addKeyListener(this);
 		ft.addFocusListener(this);
 		
 		scPeriod = Preferences.getArchivKGScrollPeriod();
@@ -112,18 +114,34 @@ class ScrollHelper implements KeyListener, DisposeListener, FocusListener
 	/*
 	 * Keyboard events 
 	 */
-	
+
+	/**
+	 * Prueft ob der Keycode fuer hoch scrollen benutzt wird.
+	 */
+	private boolean isUp(int kc) {
+		return (kc == SWT.ARROW_UP ||
+				kc == SWT.PAGE_UP);
+	}
+
+	/**
+	 * Prueft ob der Keycode fuer runter scrollen benutzt wird.
+	 */
+	private boolean isDown(int kc) {
+		return (kc == SWT.ARROW_DOWN ||
+				kc == SWT.PAGE_DOWN);
+	}
+
 	public void keyReleased(KeyEvent e) {
-		if (e.keyCode == SWT.ARROW_UP || e.keyCode == SWT.ARROW_DOWN) {
+		if (isUp(e.keyCode)|| isDown(e.keyCode)) {
 			stop();
 		}
 	}
 
 	public void keyPressed(KeyEvent e) {
-		if (e.keyCode == SWT.ARROW_DOWN) {
+		if (isDown(e.keyCode)) {
 			dir = Direction.DOWN;
 			start();
-		} else if (e.keyCode == SWT.ARROW_UP) {
+		} else if (isUp(e.keyCode)) {
 			dir = Direction.UP;
 			start();
 		}
