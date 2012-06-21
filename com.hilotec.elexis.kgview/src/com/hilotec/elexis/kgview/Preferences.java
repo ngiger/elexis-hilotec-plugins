@@ -18,6 +18,7 @@ import ch.elexis.preferences.inputs.MultilineFieldEditor;
  */
 public class Preferences extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
+	private static SettingsPreferenceStore store;
 	public static final String CFG_EVLISTE = "hilotec/kgview/einnahmevorschriften";
 	public static final String CFG_FLORDZ = "hilotec/kgview/ordnungszahlfavliste";
 	public static final String CFG_MK_INCSTOP = "hilotec/kgview/mkincludestopdate";
@@ -26,9 +27,21 @@ public class Preferences extends FieldEditorPreferencePage implements
 	public static final String CFG_AKG_SCROLLDIST_UP = "hilotec/kgview/archivkgscrolldistup";
 	public static final String CFG_AKG_SCROLLDIST_DOWN = "hilotec/kgview/archivkgscrolldistdown";
 
+	static {
+		store = new SettingsPreferenceStore(Hub.mandantCfg);
+
+		// Standardwerte setzten
+		store.setDefault(CFG_FLORDZ, false);
+		store.setDefault(CFG_MK_INCSTOP, false);
+		store.setDefault(CFG_AKG_HEARTBEAT, 10);
+		store.setDefault(CFG_AKG_SCROLLPERIOD, 200);
+		store.setDefault(CFG_AKG_SCROLLDIST_UP, 5);
+		store.setDefault(CFG_AKG_SCROLLDIST_DOWN, 5);
+	}
+
 	public Preferences() {
 		super(GRID);
-		setPreferenceStore(new SettingsPreferenceStore(Hub.mandantCfg));
+		setPreferenceStore(store);
 	}
 	
 	@Override
@@ -74,7 +87,7 @@ public class Preferences extends FieldEditorPreferencePage implements
 	 * angezeigt werden, die das aktuelle Datum als Stoppdatum haben?
 	 */
 	public static boolean getMedikarteStopdatumInkl() {
-		return Hub.mandantCfg.get(CFG_MK_INCSTOP, false);
+		return store.getBoolean(CFG_MK_INCSTOP);
 	}
 
 	/**
@@ -82,7 +95,7 @@ public class Preferences extends FieldEditorPreferencePage implements
 	 *         ArchivKG-Ansicht.
 	 */
 	public int getArchivKGHeartbeat() {
-		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_HEARTBEAT, "10"));
+		int n = store.getInt(CFG_AKG_HEARTBEAT);
 		if (n < 1) n = 1;
 		return n;
 	}
@@ -91,7 +104,7 @@ public class Preferences extends FieldEditorPreferencePage implements
 	 * @return Fuer automatisches Scrollen in ArchivKG, Periode in Millisekunden.
 	 */
 	public static int getArchivKGScrollPeriod() {
-		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_SCROLLPERIOD, "200"));
+		int n = store.getInt(CFG_AKG_SCROLLPERIOD);
 		if (n < 50) n = 50;
 		return n;
 	}
@@ -100,7 +113,7 @@ public class Preferences extends FieldEditorPreferencePage implements
 	 * @return Fuer automatisches Scrollen in ArchivKG, Scrolldistanz in Pixel
 	 */
 	public static int getArchivKGScrollDistUp() {
-		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_SCROLLDIST_UP, "5"));
+		int n = store.getInt(CFG_AKG_SCROLLDIST_UP);
 		if (n < 1) n = 1;
 		return n;
 	}
@@ -109,7 +122,7 @@ public class Preferences extends FieldEditorPreferencePage implements
 	 * @return Fuer automatisches Scrollen in ArchivKG, Scrolldistanz in Pixel
 	 */
 	public static int getArchivKGScrollDistDown() {
-		int n = Integer.parseInt(Hub.mandantCfg.get(CFG_AKG_SCROLLDIST_DOWN, "5"));
+		int n = store.getInt(CFG_AKG_SCROLLDIST_DOWN);
 		if (n < 1) n = 1;
 		return n;
 	}
