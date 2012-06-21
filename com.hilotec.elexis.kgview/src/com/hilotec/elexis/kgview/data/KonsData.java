@@ -2,10 +2,11 @@ package com.hilotec.elexis.kgview.data;
 
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.PersistentObject;
+import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
 public class KonsData extends PersistentObject {
-	public static final String VERSION = "6";
+	public static final String VERSION = "7";
 	public static final String PLUGIN_ID = "com.hilotec.elexis.kgview";
 	
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_KONSDATA";
@@ -23,6 +24,7 @@ public class KonsData extends PersistentObject {
 	public static final String FLD_EKG				= "EKG";
 	public static final String FLD_KONSZEIT			= "KonsZeit";
 	public static final String FLD_KONSBEGINN		= "KonsBeginn";
+	public static final String FLD_ISTTELEFON		= "IstTelefon";
 
 	static {
 		addMapping(TABLENAME,
@@ -39,7 +41,8 @@ public class KonsData extends PersistentObject {
 				"Roentgen",
 				"EKG",
 				"KonsZeit",
-				"KonsBeginn");
+				"KonsBeginn",
+				"IstTelefon");
 		checkTable();
 	}
 
@@ -61,7 +64,8 @@ public class KonsData extends PersistentObject {
 			+ "  Roentgen		TEXT, "
 			+ "  EKG			TEXT, "
 			+ "  KonsZeit 		BIGINT DEFAULT 0, "
-			+ "  KonsBeginn     BIGINT  "
+			+ "  KonsBeginn     BIGINT,  "
+			+ "  IstTelefon		CHAR(1) DEFAULT '0' "
 			+ ");"
 			+ "INSERT INTO " + TABLENAME + " (ID, JetzLeiden) VALUES "
 			+ "	('VERSION', '" + VERSION + "');";
@@ -102,6 +106,11 @@ public class KonsData extends PersistentObject {
 			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '6' WHERE"
 			+ "  ID LIKE 'VERSION';";
 
+	private static final String up_6to7 =
+		"ALTER TABLE " + TABLENAME
+			+ "  ADD IstTelefon		CHAR(1) DEFAULT '0' AFTER KonsBeginn;"
+			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '7' WHERE"
+			+ "  ID LIKE 'VERSION';";
 	
 	private static void checkTable() {
 		KonsData check = load("VERSION");
@@ -118,6 +127,8 @@ public class KonsData extends PersistentObject {
 				createOrModifyTable(up_4to5);
 			if (check.getJetzigesLeiden().equals("5"))
 				createOrModifyTable(up_5to6);
+			if (check.getJetzigesLeiden().equals("6"))
+				createOrModifyTable(up_6to7);
 		}
 	}
 
@@ -220,6 +231,11 @@ public class KonsData extends PersistentObject {
 		return Konsultation.load(getId());
 	}
 	
+	public boolean getIstTelefon() {
+		String tel = get(FLD_ISTTELEFON);
+		return !(StringTool.isNothing(tel) || tel.equals("0"));
+	}
+	
 
 	public void setJetzigesLeiden(String txt) {
 		set(FLD_JETZLEIDEN, txt);
@@ -263,5 +279,9 @@ public class KonsData extends PersistentObject {
 
 	public void setKonsZeit(long zeit) {
 		set(FLD_KONSZEIT, Long.toString(zeit));
+	}
+	
+	public void setIstTelefon(boolean b) {
+		set(FLD_ISTTELEFON, (b ? "1" : "0"));
 	}
 }

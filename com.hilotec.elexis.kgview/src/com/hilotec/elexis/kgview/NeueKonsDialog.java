@@ -5,6 +5,7 @@ import java.util.Date;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -25,14 +26,23 @@ public class NeueKonsDialog extends TitleAreaDialog {
 
 	DatePickerCombo datum;
 	Text zeit;
+	Button telefon;
 	
 	Konsultation kons;
 	KonsData data;
 	Fall fall;
+	boolean neuTel;
 	
-	public NeueKonsDialog(Shell parentShell, Fall fall) {
+	/**
+	 * Dialog zum anlegen neuer Kons erstellen.
+	 * 
+	 * @param fall Fall zu dem die Konsultation gehoert
+	 * @param tel  Gibt an ob es sich um eine Telefonkons handeln soll
+	 */
+	public NeueKonsDialog(Shell parentShell, Fall fall, boolean tel) {
 		super(parentShell);
 		this.fall = fall;
+		neuTel = tel;
 	}
 	
 	public NeueKonsDialog(Shell parentShell, Konsultation kons) {
@@ -46,23 +56,27 @@ public class NeueKonsDialog extends TitleAreaDialog {
 		Composite comp = new Composite(parent, 0);
 		comp.setLayout(new GridLayout(2, false));
 		
-		
 		new Label(comp, SWT.NONE).setText("Datum");
 		datum = new DatePickerCombo(comp, SWT.NONE);
 		
 		new Label(comp, SWT.NONE).setText("Zeit");
 		zeit = SWTHelper.createText(comp, 1, SWT.BORDER);
 		
+		new Label(comp, SWT.NONE) .setText("Telefon");
+		telefon = new Button(comp, SWT.CHECK);
+		
 		// Datum- und Zeitfelder initialisieren
 		if (kons == null) {
 			setTitle("Neue Konsultation erstellen");
 			datum.setDate(new Date());
 			zeit.setText(new TimeTool().toString(TimeTool.TIME_SMALL));
+			telefon.setSelection(neuTel);
 		} else {
 			setTitle("Konsultation modifizieren");
 			TimeTool tt = new TimeTool(kons.getDatum());
 			datum.setDate(tt.getTime());
 			zeit.setText(data.getKonsBeginn());
+			telefon.setSelection(data.getIstTelefon());
 		}
 		return comp;
 	}
@@ -108,6 +122,7 @@ public class NeueKonsDialog extends TitleAreaDialog {
 		data.setKonsBeginn(tt.getTimeInMillis());
 		kons.setDatum(new TimeTool(d.getTime()).toString(TimeTool.DATE_GER),
 				false);
+		data.setIstTelefon(telefon.getSelection());
 		close();
 	}
 }

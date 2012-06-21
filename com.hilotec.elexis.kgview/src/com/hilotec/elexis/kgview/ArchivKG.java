@@ -153,6 +153,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	
 	ScrolledFormText text;
 	private Action actNeueKons;
+	private Action actNeueTelKons;
 	private Action actKonsAendern;
 	private Action actAutoAkt;
 	private Action actSortierungUmk;
@@ -186,8 +187,8 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		
 		createActions();
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actNeueKons, actKonsAendern, actAutoAkt,
-				actSortierungUmk);
+		menus.createToolbar(actNeueKons, actNeueTelKons, actKonsAendern,
+				actAutoAkt, actSortierungUmk);
 		
 		// Aktuell ausgewaehlten Patienten laden
 		Patient pat = (Patient) ElexisEventDispatcher.getSelected(Patient.class);
@@ -266,7 +267,11 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		KonsData kd = KonsData.load(k);
 		
 		sb.append("<p>");
-		sb.append("<b>Konsultation</b> ");
+		if (kd.getIstTelefon()) {
+			sb.append("<b>Telefon</b> ");
+		} else {
+			sb.append("<b>Konsultation</b> ");
+		}
 		sb.append("<a href=\"kons:" + k.getId() + "\">");
 		sb.append(k.getDatum() + " " + kd.getKonsBeginn() + "</a>");
 		sb.append(" " + k.getFall().getAbrechnungsSystem());
@@ -332,26 +337,42 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 
 	public void setFocus() {}
 	
-	private void createActions() {
-		actNeueKons = new Action(Messages.getString("GlobalActions.NewKons")) { //$NON-NLS-1$
-			{
+	private class NeueKonsAct extends Action {
+		private boolean tel;
+		public NeueKonsAct(boolean tel) {
+			super(Messages.getString("GlobalActions.NewKons"));
+			setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_NEW));
+			
+			if (tel) {
+				setText("Neue Telefonkonsultation");
+				setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(
+						Activator.PLUGIN_ID, "rsc/phone.png")); 
+				setToolTipText("Neue Telefonkonsultation anlegen");
+			} else {
 				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_NEW));
 				setToolTipText(Messages.getString("GlobalActions.NewKonsToolTip")); //$NON-NLS-1$
 			}
-			
-			@Override
-			public void run(){
-				Fall fall = (Fall)
-					ElexisEventDispatcher.getSelected(Fall.class);
-				if (fall == null || !fall.isOpen()) {
-					MessageDialog.openError(null, "Kein offener Fall ausgewählt",
-						"Um eine neue Konsultation erstellen zu können, muss "+
-						"ein offener Fall ausgewählt werden");
-					return;
-				}
-				new NeueKonsDialog(getSite().getShell(), fall).open(); 
+			this.tel = tel;
+		}
+		
+		@Override
+		public void run(){
+			Fall fall = (Fall)
+				ElexisEventDispatcher.getSelected(Fall.class);
+			if (fall == null || !fall.isOpen()) {
+				MessageDialog.openError(null, "Kein offener Fall ausgewählt",
+					"Um eine neue Konsultation erstellen zu können, muss "+
+					"ein offener Fall ausgewählt werden");
+				return;
 			}
-		};
+			new NeueKonsDialog(getSite().getShell(), fall, tel).open(); 
+		}
+	}
+	
+	private void createActions() {
+		actNeueKons = new NeueKonsAct(false);
+		actNeueTelKons = new NeueKonsAct(true);
+
 		actKonsAendern = new Action("Konsultations Datum/Zeit ändern") {
 			{
 				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_EDIT));
