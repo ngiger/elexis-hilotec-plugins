@@ -38,7 +38,7 @@ public class NeueKonsDialog extends TitleAreaDialog {
 	public NeueKonsDialog(Shell parentShell, Konsultation kons) {
 		super(parentShell);
 		this.kons = kons;
-		data = KonsData.load(kons);
+		data = new KonsData(kons);
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class NeueKonsDialog extends TitleAreaDialog {
 		// Neue kons anlegen falls noetig
 		if (kons == null) {
 			kons = fall.neueKonsultation();
-			data = KonsData.load(kons);
+			data = new KonsData(kons);
 			ElexisEventDispatcher.fireSelectionEvent(kons);
 		}
 		
