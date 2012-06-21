@@ -187,7 +187,15 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			return true;
 		}
 		
-		// Bruch-Dosierung
+		// Fuehrende Ganzzahl parsen
+		if (s.matches("[0-9]+ .*")) {
+			s = s.replaceAll("[ \t]+", " ");
+			String[] parts = s.split(" ");
+			if (parts.length != 2) return false;
+			s = parts[1];
+		}
+		
+		// Bruch-Dosierung parsen
 		if (s.matches("[0-9]+/[0-9]+")) {
 			String[] parts = s.split("/");
 			int z, n;
@@ -198,9 +206,8 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 				// Sollte nicht passieren nach Regex-Check oben.
 				return false;
 			}	
-			return (z > 0) && (n > 0);
+			return (z > 0) && (n > 0) && (n > z);
 		}
-		
 		return false;
 	}
 	
