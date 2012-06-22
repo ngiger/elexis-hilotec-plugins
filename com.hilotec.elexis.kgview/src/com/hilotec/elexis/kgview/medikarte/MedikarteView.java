@@ -9,7 +9,9 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -249,7 +251,8 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			ti.setData(p);
 			
 			if (p.isDeleted()) {
-				ti.setGrayed(true);
+				Color red = new Color(Display.getCurrent(), 255, 0, 0);
+				ti.setForeground(red);
 			}
 
 			int i = 0;
