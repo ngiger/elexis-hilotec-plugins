@@ -143,8 +143,8 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 				TableItem[] tis = table.getSelection();
 				if (tis == null || tis.length != 1) return;
 				Prescription presc = (Prescription) tis[0].getData();
-				if (presc.isDeleted()) return;
-				presc.setEndDate(null);
+				if (presc.isDeleted() || !presc.getEndDate().equals("")) return;
+				new MedikarteStopDialog(getSite().getShell(), presc).open();
 				refresh();
 			}
 		};
