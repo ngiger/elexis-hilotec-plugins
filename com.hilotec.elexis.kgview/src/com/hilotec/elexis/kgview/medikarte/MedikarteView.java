@@ -129,7 +129,6 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 				TableItem[] sel = table.getSelection();
 				if (sel == null || sel.length != 1) return;
 				Prescription presc = (Prescription) sel[0].getData();
-				if (presc.isDeleted()) return;
 				new MedikarteEintragDialog(getSite().getShell(), patient,
 						presc).open();
 				refresh();

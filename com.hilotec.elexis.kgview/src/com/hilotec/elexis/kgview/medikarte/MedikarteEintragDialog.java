@@ -255,14 +255,24 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			tDoAbend.getText() + "-" + tDoNacht.getText();
 		dosierung = dosierung.toUpperCase();
 		String bemerkung = cEV.getItem(cEV.getSelectionIndex());
-		
-		if (presc == null) {
-			presc = new Prescription(fm.getArtikel(), pat,
-					dosierung, bemerkung);
-		} else {
-			presc.setDosis(dosierung);
-			presc.setBemerkung(bemerkung);
+
+		if (presc != null && !presc.isDeleted() &&
+				presc.getEndDate().equals(""))
+		{
+			TimeTool ttOld = new TimeTool(presc.getBeginDate());
+			TimeTool ttNew = new TimeTool(tVon.getText());
+			// Wenn das neue vonDatum >= das alte von Datum ist, setzen wir das
+			// bis Datum des bestehenden Medikamentes darauf. Sind sie gleich
+			// wird die bisherige verschreibung geloescht.
+			int cmp = ttOld.compareTo(ttNew);
+			if (cmp == 0) {
+				presc.remove();
+			} else if (cmp < 0) {
+				presc.setEndDate(tVon.getText());
+			}
 		}
+		presc = new Prescription(fm.getArtikel(), pat, dosierung,
+				bemerkung);
 		presc.setBeginDate(tVon.getText());
 		presc.setEndDate(tBis.getText());
 		MedikarteHelpers.setOrdnungszahl(presc,
