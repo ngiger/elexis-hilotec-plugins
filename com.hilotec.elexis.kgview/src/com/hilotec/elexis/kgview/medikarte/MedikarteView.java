@@ -40,12 +40,15 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 	private Table table;
 	// Alle Verschreibungen anzeigen? Oder nur die aktiven.
 	private boolean alle = false;
+	// Geloeschte auch anzeigen?
+	private boolean geloescht = false;
 	private Patient patient;
 	
 	private Action actEdit;
 	private Action actStop;
 	private Action actDelete;
 	private Action actFilter;
+	private Action actShowDel;
 	private Action actDrucken;
 	
 	@Override
@@ -105,7 +108,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		
 		// Menus oben rechts in der View
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actFilter, actDrucken);
+		menus.createToolbar(actFilter, actShowDel, actDrucken);
 		
 		// Contextmenu fuer Tabelle
 		menus.createControlContextMenu(table, actEdit, actStop, actDelete);
@@ -123,8 +126,10 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			public void run() {
 				TableItem[] sel = table.getSelection();
 				if (sel == null || sel.length != 1) return;
+				Prescription presc = (Prescription) sel[0].getData();
+				if (presc.isDeleted()) return;
 				new MedikarteEintragDialog(getSite().getShell(), patient,
-						(Prescription) sel[0].getData()).open();
+						presc).open();
 				refresh();
 			}
 		};
@@ -136,6 +141,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 				TableItem[] tis = table.getSelection();
 				if (tis == null || tis.length != 1) return;
 				Prescription presc = (Prescription) tis[0].getData();
+				if (presc.isDeleted()) return;
 				presc.setEndDate(null);
 				refresh();
 			}
@@ -147,12 +153,13 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			public void run() {
 				TableItem[] tis = table.getSelection();
 				if (tis == null || tis.length != 1) return;
+				Prescription presc = (Prescription) tis[0].getData();
+				if (presc.isDeleted()) return;
+
 				if (!SWTHelper.askYesNo("Verschreibung loeschen", "Soll der " +
 						"markierte Eintrag wirklich permanent gelöscht werden?"))
 					return;
-					
-				Prescription presc = (Prescription) tis[0].getData();
-				presc.delete();
+				presc.remove();
 				refresh();
 			}
 		};
@@ -167,6 +174,21 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 					refresh();
 				} else {
 					alle = false;
+					refresh();
+				}
+			}
+		};
+
+		// Aktion fuer den Geloeschte anzeigen Button
+		actShowDel = new Action("Gelöschte anzeigen", Action.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				if (isChecked()) {
+					geloescht = true;
+					// TODO: Async?
+					refresh();
+				} else {
+					geloescht = false;
 					refresh();
 				}
 			}
@@ -215,7 +237,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			
 		// Medikation zu Patient zusammensuchen.
 		List<Prescription> l = MedikarteHelpers.
-			medikarteMedikation(patient, alle);
+			medikarteMedikation(patient, alle, geloescht);
 		
 		// Tabelle neu befuellen
 		for (Prescription p: l) {
@@ -226,6 +248,10 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			TableItem ti = new TableItem(table, 0);
 			ti.setData(p);
 			
+			if (p.isDeleted()) {
+				ti.setGrayed(true);
+			}
+
 			int i = 0;
 			int ord = MedikarteHelpers.getOrdnungszahl(p);
 			ti.setText(i++, Integer.toString(ord));

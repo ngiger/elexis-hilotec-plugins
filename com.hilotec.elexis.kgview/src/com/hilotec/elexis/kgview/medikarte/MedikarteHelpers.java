@@ -7,6 +7,7 @@ import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.data.FavMedikament;
 
 import ch.elexis.data.Patient;
+import ch.elexis.data.PersistentObject;
 import ch.elexis.data.Prescription;
 import ch.elexis.data.Query;
 import ch.rgw.tools.StringTool;
@@ -15,6 +16,7 @@ import ch.rgw.tools.TimeTool;
 public class MedikarteHelpers {
 	private final static String PRESC_EI_ORD = "hilotec:ordnungszahl";
 	private final static String PRESC_EI_ZWECK = "hilotec:zweck";
+
 	/**
 	 * Medikation auf der Medikarte des Patienten zusammensuchen.
 	 * Wenn !alle, dann wird nur die noch aktuelle Medikation zurueckgegeben.
@@ -22,7 +24,28 @@ public class MedikarteHelpers {
 	public static List<Prescription> medikarteMedikation(
 			Patient patient, boolean alle)
 	{
+		return medikarteMedikation(patient, alle, false);
+	}
+
+	/**
+	 * Medikation auf der Medikarte des Patienten zusammensuchen.
+	 * Wenn !alle, dann wird nur die noch aktuelle Medikation zurueckgegeben.
+	 * Mit geloescht kann gesteuert werden ob auch geloeschte Medikamente
+	 * angezeigt werden sollen.
+	 */
+	public static List<Prescription> medikarteMedikation(
+			Patient patient, boolean alle, boolean geloescht)
+	{
 		Query<Prescription> qbe = new Query<Prescription>(Prescription.class);
+
+		// FIXME: sollte mit executed with deleted gehen
+		if (geloescht) {
+			boolean sd = PersistentObject.isShowDeleted();
+			PersistentObject.setShowDeleted(true);
+			qbe.clear();
+			PersistentObject.setShowDeleted(sd);
+		}
+
 		qbe.add(Prescription.PATIENT_ID, Query.EQUALS, patient.getId());
 		qbe.add(Prescription.REZEPT_ID, StringTool.leer, null);
 		if (!alle) {
