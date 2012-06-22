@@ -56,10 +56,10 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		table.setLinesVisible(true);
 		
 		// Ein haufen Tabellenueberschriften
-		String[] ueberschriften = { "Medikament", "Ordnungszahl",
+		String[] ueberschriften = { "Ordnungszahl", "Medikament",
 				"Mo", "Mi", "Ab", "Na",
 				"Einh", "Zweck", "Einnahmevorschrift", "Von", "Bis" };
-		int[] breiten = { 140, 30, 30, 30, 30, 30, 40, 200, 70, 70, 70 };
+		int[] breiten = { 30, 140, 30, 30, 30, 30, 40, 200, 70, 70, 70 };
 		for (int i = 0; i < breiten.length; i++) {
 			TableColumn tc = new TableColumn(table, SWT.NONE);
 			tc.setText(ueberschriften[i]);
@@ -227,9 +227,9 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 			ti.setData(p);
 			
 			int i = 0;
-			ti.setText(i++, fm.getBezeichnung());
 			int ord = MedikarteHelpers.getOrdnungszahl(p);
 			ti.setText(i++, Integer.toString(ord));
+			ti.setText(i++, fm.getBezeichnung());
 			ti.setText(i++, dosierung[0]);
 			ti.setText(i++, dosierung[1]);
 			ti.setText(i++, dosierung[2]);
