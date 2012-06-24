@@ -30,6 +30,20 @@
       </view>
       <view
             category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.diagnoseliste.DLPersAnamnese"
+            id="com.hilotec.elexis.kgview.DLPersAnamnese"
+            name="DL Persönliche Anamnese"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.diagnoseliste.DLSysAnamnese"
+            id="com.hilotec.elexis.kgview.DLSysAnamnese"
+            name="DL Systemanamnese"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category"
             class="com.hilotec.elexis.kgview.KonsTimeView"
             id="com.hilotec.elexis.kgview.KonsTimeView"
             name="Konsultationszeit"

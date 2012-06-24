@@ -195,7 +195,8 @@ public class DataAccessor implements IDataAccess {
 	private Result<Object> generiereDiagnoseliste(Patient pat) {
 		// TODO: Waere schoen wenn wir den Baum hier nicht 2x traversieren
 		// muessten.
-		DiagnoselisteItem root = DiagnoselisteItem.getRoot(pat);
+		DiagnoselisteItem root = DiagnoselisteItem.getRoot(pat,
+				DiagnoselisteItem.TYP_DIAGNOSELISTE);
 		int depth = dliDepth(root);
 		
 		// Nur Wurzel oder weniger -> abbrechen.
