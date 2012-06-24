@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.part.ViewPart;
 
+import ch.elexis.Desk;
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
@@ -193,7 +194,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		tree.addListener(SWT.EraseItem, mlListener);
 
 
-		actEdit = new Action("Bearbeiten") {
+		actEdit = new Action("Bearbeiten") { {
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_EDIT));
+			}
 			@Override
 			public void run() {
 				if (tree.getSelectionCount() == 0) return;
@@ -212,7 +215,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 		});
 
-		actAdd = new Action("Neue Kategorie") {
+		actAdd = new Action("Neue Kategorie") { {
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_NEW));
+			}
 			@Override
 			public void run() {
 				Patient p = ElexisEventDispatcher.getSelectedPatient();
@@ -223,7 +228,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 		};
 
-		actAddChild = new Action("Neue Unterdiagnose") {
+		actAddChild = new Action("Neue Unterdiagnose") { {
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_ADDITEM));
+			}
 			@Override
 			public void run() {
 				TreeItem[] tis = tree.getSelection();
@@ -243,7 +250,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				}
 			}
 		};
-		actDel = new Action("Löschen") {
+		actDel = new Action("Löschen") { {
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_DELETE));
+			}
 			@Override
 			public void run() {
 				TreeItem[] tis = tree.getSelection();
@@ -261,7 +270,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 		};
 
-		actMoveUp = new Action("Hoch") {
+		actMoveUp = new Action("Hoch") { {
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_ARROWUP));
+			}
 			@Override
 			public void run() {
 				TreeItem[] tis = tree.getSelection();
@@ -279,7 +290,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				}
 			}
 		};
-		actMoveDown = new Action("Runter") {
+		actMoveDown = new Action("Runter") { {
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_ARROWDOWN));
+			}
 			@Override
 			public void run() {
 				TreeItem[] tis = tree.getSelection();
