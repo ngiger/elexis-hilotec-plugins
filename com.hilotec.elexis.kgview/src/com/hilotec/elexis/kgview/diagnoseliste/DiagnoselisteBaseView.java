@@ -81,16 +81,26 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 	/** Sollen neue eintraege erstellt werden koenenn? */
 	protected boolean canAdd = true;
 
+	/** Sollen alle Eintraege geloescht werden koennen? */
+	protected boolean canClear = false;
+
 	/** Soll das Datum bei Eintraegen angezeigt werden? */
 	protected boolean showDate = true;
+
+	/** Koennen Eintraege anderes Typs importiert werden (SA, PA) */
+	protected boolean allowImport = false;
+
 
 	private Tree tree;
 	Action actAdd;
 	Action actEdit;
 	Action actAddChild;
 	Action actDel;
+	Action actClear;
 	Action actMoveUp;
 	Action actMoveDown;
+	Action actImportPA;
+	Action actImportSA;
 
 	/**
 	 * Diagnoseliste Anzeige fuer Items eines bestimmten Typs initialisieren.
@@ -146,6 +156,10 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		actMoveUp.setEnabled(en);
 		actMoveDown.setEnabled(en);
 
+		actImportPA.setEnabled(en && allowImport);
+		actImportSA.setEnabled(en && allowImport);
+		actClear.setEnabled(en && canClear);
+
 		if (pat == null) return;
 
 		insertSubtree(DiagnoselisteItem.getRoot(pat, typ), null);
@@ -194,6 +208,62 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		tree.addListener(SWT.EraseItem, mlListener);
 
 
+		makeActions();
+		tree.addMouseListener(new MouseListener() {
+			public void mouseUp(MouseEvent e) {}
+			public void mouseDown(MouseEvent e) {}
+			public void mouseDoubleClick(MouseEvent e) {
+				actEdit.run();
+			}
+		});
+
+
+
+		// Menus oben rechts in der View
+		ViewMenus menus = new ViewMenus(getViewSite());
+		menus.createToolbar(actAdd, actMoveUp, actMoveDown);
+		menus.createMenu(actImportPA, actImportSA, actClear);
+		menus.createControlContextMenu(tree, actAddChild, actDel);
+
+		ElexisEventDispatcher.getInstance().addListeners(this);
+		updateTree(ElexisEventDispatcher.getSelectedPatient());
+	}
+
+	private class ImportAction extends Action {
+		int fromTyp;
+
+		public ImportAction(int typ) {
+			super();
+			if (typ == DiagnoselisteItem.TYP_PERSANAMNESE) {
+				setText("Import Pers. Anamnese");
+			} else if (typ == DiagnoselisteItem.TYP_SYSANAMNESE){
+				setText("Import Systemanamnese");
+			}
+			setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_IMPORT));
+
+			fromTyp = typ;
+		}
+
+		private void importFrom(DiagnoselisteItem sp, DiagnoselisteItem dp) {
+			for (DiagnoselisteItem si: sp.getChildren()) {
+				DiagnoselisteItem di = dp.getChildBySrc(si);
+				if (di == null) {
+					di = dp.createChildFrom(si);
+				}
+				importFrom(si, di);
+			}
+		}
+
+		@Override
+		public void run() {
+			Patient pat = ElexisEventDispatcher.getSelectedPatient();
+			importFrom(DiagnoselisteItem.getRoot(pat, fromTyp),
+					   DiagnoselisteItem.getRoot(pat, typ));
+			updateTree(pat);
+		}
+	}
+
+	private void makeActions() {
 		actEdit = new Action("Bearbeiten") { {
 				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_EDIT));
 			}
@@ -207,13 +277,6 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 		};
 
-		tree.addMouseListener(new MouseListener() {
-			public void mouseUp(MouseEvent e) {}
-			public void mouseDown(MouseEvent e) {}
-			public void mouseDoubleClick(MouseEvent e) {
-				actEdit.run();
-			}
-		});
 
 		actAdd = new Action("Neue Kategorie") { {
 				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_NEW));
@@ -269,7 +332,18 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				}
 			}
 		};
-
+		actClear = new Action("Alle Löschen") {
+			@Override
+			public void run() {
+				if (SWTHelper.askYesNo("Alle Eintraege loeschen",
+						"Sollen alle Eintraege unweiderruflich gelöscht werden?"))
+				{
+					Patient pat = ElexisEventDispatcher.getSelectedPatient();
+					DiagnoselisteItem.getRoot(pat, typ).deleteChildren();
+					updateTree(pat);
+				}
+			}
+		};
 		actMoveUp = new Action("Hoch") { {
 				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_ARROWUP));
 			}
@@ -311,14 +385,8 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 		};
 
-		// Menus oben rechts in der View
-		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actAdd, actMoveUp, actMoveDown);
-
-		menus.createControlContextMenu(tree, actAddChild, actDel);
-
-		ElexisEventDispatcher.getInstance().addListeners(this);
-		updateTree(ElexisEventDispatcher.getSelectedPatient());
+		actImportPA = new ImportAction(DiagnoselisteItem.TYP_PERSANAMNESE);
+		actImportSA = new ImportAction(DiagnoselisteItem.TYP_SYSANAMNESE);
 	}
 
 	@Override

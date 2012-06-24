@@ -15,6 +15,7 @@ public class DiagnoselisteItem extends PersistentObject {
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_DIAGNOSE";
 	public static final String FLD_PATIENT = "Patient";
 	public static final String FLD_TYP = "Typ";
+	public static final String FLD_SOURCE = "Source";
 	public static final String FLD_PARENT = "Parent";
 	public static final String FLD_POSITION = "Position";
 	public static final String FLD_DATUM = "Datum";
@@ -29,6 +30,7 @@ public class DiagnoselisteItem extends PersistentObject {
 		addMapping(TABLENAME,
 				FLD_PATIENT,
 				FLD_TYP,
+				FLD_SOURCE,
 				FLD_PARENT,
 				FLD_POSITION,
 				"Datum=S:D:Datum",
@@ -123,6 +125,14 @@ public class DiagnoselisteItem extends PersistentObject {
 		setInt(FLD_TYP, typ);
 	}
 
+	public String getSource() {
+		return get(FLD_SOURCE);
+	}
+
+	public void setSource(String src) {
+		set(FLD_SOURCE, src);
+	}
+
 	public DiagnoselisteItem getParent() {
 		String id = get(FLD_PARENT);
 		if (id == null || id.isEmpty()) return null;
@@ -175,10 +185,27 @@ public class DiagnoselisteItem extends PersistentObject {
 		return q.execute();
 	}
 	
+	public DiagnoselisteItem getChildBySrc(DiagnoselisteItem src) {
+		for (DiagnoselisteItem i: getChildren()) {
+			if (i.getSource().equals(src.getId())) {
+				return i;
+			}
+		}
+		return null;
+	}
+
 	public DiagnoselisteItem createChild() {
 		return new DiagnoselisteItem(this, nextChildPos());
 	}
-	
+
+	public DiagnoselisteItem createChildFrom(DiagnoselisteItem src) {
+		DiagnoselisteItem i = createChild();
+		i.setText(src.getText());
+		i.setDatum(src.getDatum());
+		i.setSource(src.getId());
+		return i;
+	}
+
 	public static DiagnoselisteItem getRoot(Patient pat, int typ) {
 		Query<DiagnoselisteItem> q =
 			new Query<DiagnoselisteItem>(DiagnoselisteItem.class);
@@ -224,7 +251,14 @@ public class DiagnoselisteItem extends PersistentObject {
 				+ " AND Position > " + getPosition() + " AND deleted = '0'");
 		return super.delete();
 	}
-	
+
+	public void deleteChildren() {
+		for (DiagnoselisteItem i: getChildren()) {
+			i.deleteChildren();
+			i.delete();
+		}
+	}
+
 	@Override
 	public String getLabel() {
 		return getText();

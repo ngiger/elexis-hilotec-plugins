@@ -11,5 +11,7 @@ public class DiagnoselisteView extends DiagnoselisteBaseView {
 		super(DiagnoselisteItem.TYP_DIAGNOSELISTE);
 		showDate = false;
 		canAdd = false;
+		canClear = true;
+		allowImport = true;
 	}
 }
