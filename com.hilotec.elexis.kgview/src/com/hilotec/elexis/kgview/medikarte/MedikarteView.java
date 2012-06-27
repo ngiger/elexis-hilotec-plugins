@@ -64,7 +64,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		String[] ueberschriften = { "Ordnungszahl", "Medikament",
 				"Mo", "Mi", "Ab", "Na",
 				"Einh", "Zweck", "Einnahmevorschrift", "Von", "Bis" };
-		int[] breiten = { 30, 140, 30, 30, 30, 30, 40, 200, 70, 70, 70 };
+		int[] breiten = { 30, 140, 40, 40, 40, 40, 40, 200, 70, 70, 70 };
 		for (int i = 0; i < breiten.length; i++) {
 			TableColumn tc = new TableColumn(table, SWT.NONE);
 			tc.setText(ueberschriften[i]);
