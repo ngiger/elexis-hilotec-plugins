@@ -13,5 +13,7 @@ public class DiagnoselisteView extends DiagnoselisteBaseView {
 		canAdd = false;
 		canClear = true;
 		allowImport = true;
+		allowImportCB = false;
+		allowImportDL = false;
 	}
 }
