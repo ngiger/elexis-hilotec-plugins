@@ -11,7 +11,7 @@
             category="com.hilotec.elexis.kgview.category"
             class="com.hilotec.elexis.kgview.medikarte.MedikarteView"
             id="com.hilotec.elexis.kgview.MedikarteView"
-            name="Medikamentenkarte"
+            name="Medikation"
             restorable="true">
       </view>
       <view
