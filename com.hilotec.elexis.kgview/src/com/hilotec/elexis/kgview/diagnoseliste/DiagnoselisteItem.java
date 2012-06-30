@@ -287,4 +287,11 @@ public class DiagnoselisteItem extends PersistentObject {
 		return TABLENAME;
 	}
 
+	/**
+	 * Drag ist erlaubt
+	 */
+	@Override
+	public boolean isDragOK() {
+		return true;
+	}
 }

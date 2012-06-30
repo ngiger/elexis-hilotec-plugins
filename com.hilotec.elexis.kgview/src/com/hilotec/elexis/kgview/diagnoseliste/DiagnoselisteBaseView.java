@@ -2,6 +2,7 @@ package com.hilotec.elexis.kgview.diagnoseliste;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -13,6 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -32,11 +34,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import com.hilotec.elexis.kgview.diagnoseliste.DiagnoselisteItem;
+
 import ch.elexis.Desk;
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
 import ch.elexis.data.Patient;
+import ch.elexis.data.PersistentObject;
+import ch.elexis.util.PersistentObjectDragSource;
+import ch.elexis.util.PersistentObjectDropTarget;
 import ch.elexis.util.SWTHelper;
 import ch.elexis.util.ViewMenus;
 
@@ -482,6 +489,10 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		}
 	}
 
+	private void updateTree() {
+		updateTree(ElexisEventDispatcher.getSelectedPatient());
+	}
+
 	private void updateTree(Patient pat) {
 		tree.removeAll();
 		boolean en = (pat != null);
@@ -503,6 +514,14 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		if (pat == null) return;
 
 		insertSubtree(DiagnoselisteItem.getRoot(pat, typ), null);
+	}
+
+	/**
+	 * Root-Item eines bestimmten Typs fuer den aktuellen Patienten suchen
+	 */
+	private static DiagnoselisteItem getRoot(int typ) {
+		Patient pat = ElexisEventDispatcher.getSelectedPatient();
+		return DiagnoselisteItem.getRoot(pat, typ);
 	}
 
 	@Override
@@ -547,6 +566,68 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		tree.addListener(SWT.PaintItem, mlListener);
 		tree.addListener(SWT.EraseItem, mlListener);
 
+		// Drop Target um neue Eintraege zu erstellen
+		new PersistentObjectDropTarget(tree,
+				new PersistentObjectDropTarget.IReceiver()
+		{
+					@Override
+					public void dropped(PersistentObject o, DropTargetEvent e) {
+						DiagnoselisteItem d = (DiagnoselisteItem) o;
+						DiagnoselisteItem root = getRoot(typ);
+						if (root == null) return;
+
+						importItemTo(d, root);
+						updateTree();
+					}
+
+					@Override
+					public boolean accept(PersistentObject o) {
+						if (!(o instanceof DiagnoselisteItem)) return false;
+						DiagnoselisteItem d = (DiagnoselisteItem) o;
+
+						// Droppen nur erlauben wenn es sich um ein Toplevel
+						// Element handelt
+						DiagnoselisteItem root = getRoot(d.getTyp());
+						if (root == null || !d.getParent().equals(root))
+							return false;
+
+						// Pruefen ob der Typ importiert werden kann
+						int typ = d.getTyp();
+						if (typ == DiagnoselisteItem.TYP_DIAGNOSELISTE && allowImportDL)
+							return true;
+						else if (allowImport &&
+								(typ == DiagnoselisteItem.TYP_PERSANAMNESE ||
+								 typ == DiagnoselisteItem.TYP_SYSANAMNESE))
+							return true;
+
+						return false;
+					}
+		});
+
+		new PersistentObjectDragSource(tree,
+				new PersistentObjectDragSource.ISelectionRenderer()
+		{
+			public List<PersistentObject> getSelection() {
+				TreeItem[] tis = tree.getSelection();
+				if (tis == null) return null;
+
+				DiagnoselisteItem root = getRoot(typ);
+				ArrayList<PersistentObject> res =
+					new ArrayList<PersistentObject>(tis.length);
+				// Auswahl in Liste von Items umwandeln
+				for (TreeItem ti: tis) {
+					DiagnoselisteItem di = (DiagnoselisteItem) ti.getData();
+					res.add(di);
+
+					// Wenn es sich nicht um ein Toplevel-Item handelt, brechen
+					// wir ab
+					if (!di.getParent().equals(root)) {
+						return null;
+					}
+				}
+				return res;
+			}
+		});
 
 		makeActions();
 		tree.addMouseListener(new MouseListener() {
@@ -567,9 +648,41 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		menus.createControlContextMenu(tree, actAddChild, actDel);
 
 		ElexisEventDispatcher.getInstance().addListeners(this);
-		updateTree(ElexisEventDispatcher.getSelectedPatient());
+		updateTree();
 	}
 
+	/**
+	 * Importiert alle Kind-Items von sp nach dp.
+	 */
+	private void importFrom(DiagnoselisteItem sp, DiagnoselisteItem dp) {
+		for (DiagnoselisteItem si: sp.getChildren()) {
+			importItemTo(si, dp);
+		}
+	}
+
+	/**
+	 * Importiert item als Kind-Item in newParent item falls es noch nicht
+	 * enthalten ist. Sonst werden nur die Unterelemente rekursiv eingefuegt.
+	 *
+	 * @param item      Quell-Item
+	 * @param newParent Neues Ziel-Parent Item
+	 */
+	private void importItemTo(DiagnoselisteItem item,
+			DiagnoselisteItem newParent)
+	{
+		DiagnoselisteItem di = newParent.getChildBySrc(item);
+		if (di == null) {
+			di = newParent.createChildFrom(item);
+		}
+
+		// Rekursiv Kind-Item behandeln
+		importFrom(item, di);
+	}
+
+
+	/**
+	 * Action zum Importieren aus Views eines anderen Typs.
+	 */
 	private class ImportAction extends Action {
 		int fromTyp;
 
@@ -585,16 +698,6 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_IMPORT));
 
 			fromTyp = typ;
-		}
-
-		private void importFrom(DiagnoselisteItem sp, DiagnoselisteItem dp) {
-			for (DiagnoselisteItem si: sp.getChildren()) {
-				DiagnoselisteItem di = dp.getChildBySrc(si);
-				if (di == null) {
-					di = dp.createChildFrom(si);
-				}
-				importFrom(si, di);
-			}
 		}
 
 		@Override
@@ -683,7 +786,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				{
 					Patient pat = ElexisEventDispatcher.getSelectedPatient();
 					DiagnoselisteItem.getRoot(pat, typ).deleteChildren();
-					updateTree(pat);
+					updateTree();
 				}
 			}
 		};
