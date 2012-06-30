@@ -169,10 +169,11 @@ public class DiagnoselisteItem extends PersistentObject {
 	
 	
 	private int nextChildPos() {
-		String sql = "SELECT (MAX(Position) + 1) FROM " +
-		TABLENAME + " WHERE Patient = '" + getPatient().getId() + "' AND " +
-		"Parent = '" + getId() + "' AND deleted = '0'";
-		return getConnection().queryInt(sql);
+		int next = 0;
+		for (DiagnoselisteItem di: getChildren()) {
+			next = Math.max(next, di.getPosition() + 1);
+		}
+		return next;
 	}
 	
 	public List<DiagnoselisteItem> getChildren() {
@@ -223,33 +224,50 @@ public class DiagnoselisteItem extends PersistentObject {
 	
 	/* FIXME: Generalisieren in ein remove() und insert() oder so */
 	public void moveUp() {
+		DiagnoselisteItem parent = getParent();
+		if (parent == null) return;
+
 		int pos = getPosition();
 		if (pos == 0) return;
-		
-		String par = (getParent() == null ? "IS NULL" : "= '" + getParent().getId() + "'");
-		getConnection().exec("UPDATE " + TABLENAME + " SET Position = Position + 1 "
-				+ "WHERE Typ = " + getTyp() + " AND Parent " + par
-				+ " AND Position = " + (pos - 1) + " AND deleted = '0'");
-		setPosition(pos - 1);
+		pos -= 1;
+
+		for (DiagnoselisteItem di: parent.getChildren()) {
+			if (di.getPosition() == pos) {
+				di.setPosition(pos + 1);
+				setPosition(pos);
+				break;
+			}
+		}
 	}
 	
 	public void moveDown() {
+		DiagnoselisteItem parent = getParent();
+		if (parent == null) return;
+
 		int pos = getPosition();
-		if (getParent().getChildren().size() <= pos + 1) return;
-		
-		String par = (getParent() == null ? "IS NULL" : "= '" + getParent().getId() + "'");
-		getConnection().exec("UPDATE " + TABLENAME + " SET Position = Position - 1 "
-				+ "WHERE Typ = " + getTyp() + " AND Parent " + par
-				+ " AND Position = " + (pos + 1) + " AND deleted = '0'");
-		setPosition(pos + 1);
+		pos += 1;
+
+		for (DiagnoselisteItem di: parent.getChildren()) {
+			if (di.getPosition() == pos) {
+				di.setPosition(pos - 1);
+				setPosition(pos);
+				break;
+			}
+		}
 	}
 	
 	public boolean delete() {
-		String par = (getParent() == null ? "IS NULL" : "= '" + getParent().getId() + "'");
-		getConnection().exec("UPDATE " + TABLENAME + " SET Position = Position - 1 "
-				+ "WHERE Typ = " + getTyp() + " AND Parent " + par
-				+ " AND Position > " + getPosition() + " AND deleted = '0'");
-		return super.delete();
+		DiagnoselisteItem parent = getParent();
+		if (parent == null) return false;
+
+		int pos = getPosition();
+		if (super.delete())
+
+		for (DiagnoselisteItem di: parent.getChildren()) {
+			int p = di.getPosition();
+			if (p > pos) di.setPosition(p - 1);
+		}
+		return true;
 	}
 
 	public void deleteChildren() {
