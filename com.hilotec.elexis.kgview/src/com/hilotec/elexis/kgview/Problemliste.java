@@ -57,22 +57,18 @@ public class Problemliste extends ViewPart
 			private Patient pat;
 			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 				this.pat = (Patient) newInput;
-				System.out.println("changed");
 			}
 			public void dispose() { }
 			public Object[] getElements(Object inputElement) {
-				System.out.println("Foo");
 				List<Konsultation> kl = ArchivKG.getKonsultationen(pat, false);
 				ArrayList<KonsData> list = new ArrayList<KonsData>(kl.size());
 
 				// Liste mit KonsDatas zusammenstellen
 				for (Konsultation k: kl) {
-					System.out.println("blah");
 					KonsData kd = KonsData.load(k);
 					if (kd == null || StringTool.isNothing(kd.getDiagnose()))
 						continue;
 					list.add(kd);
-					System.out.println("blub");
 				}
 				return list.toArray();
 			}
@@ -126,7 +122,6 @@ public class Problemliste extends ViewPart
 			tv.setInput(null);
 		}
 		protected void selected(Patient p) {
-			System.out.println("selected");
 			tv.setInput(p);
 		}
 	}
