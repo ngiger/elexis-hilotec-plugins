@@ -16,6 +16,8 @@ import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.HTMLTransfer;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Point;
@@ -637,7 +639,13 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				actEdit.run();
 			}
 		});
-
+		tree.addKeyListener(new KeyListener() {
+			public void keyReleased(KeyEvent e) { }
+			public void keyPressed(KeyEvent e) {
+				if (e.keyCode != SWT.DEL) return;
+				if (actDel.isEnabled()) actDel.run();
+			}
+		});
 
 
 		// Menus oben rechts in der View
@@ -773,6 +781,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 							+ " Diagnose entfernen.");
 						return;
 					}
+					if (!SWTHelper.askYesNo("Löschen", "Soll die ausgewählte " +
+							"Diagnose unwiderrufbar gelöscht werden?"))
+						return;
 					di.delete();
 					tis[0].dispose();
 				}
