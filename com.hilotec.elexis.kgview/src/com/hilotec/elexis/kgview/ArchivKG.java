@@ -218,7 +218,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	/**
 	 * @return Sortierte Liste aller Konsultation dieses Patienten
 	 */
-	private ArrayList<Konsultation> getKonsultationen(Patient pat,
+	public static ArrayList<Konsultation> getKonsultationen(Patient pat,
 			final boolean reversed)
 	{
 		// Konsultationen sammeln
