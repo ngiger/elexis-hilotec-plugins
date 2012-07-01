@@ -108,7 +108,11 @@ public class Problemliste extends ViewPart
 				ElexisEventDispatcher.fireSelectionEvent(kd.getKonsultation());
 			}
 		});
-		
+
+		// Drag source um per D&D Diagnosen in die Diagnoseliste uebernehmen zu
+		// koennen.
+		new PersistentObjectDragSource(tv);
+
 		tv.setInput(ElexisEventDispatcher.getSelectedPatient());
 		new SelListener().init();
 		ElexisEventDispatcher.getInstance().addListeners(this);

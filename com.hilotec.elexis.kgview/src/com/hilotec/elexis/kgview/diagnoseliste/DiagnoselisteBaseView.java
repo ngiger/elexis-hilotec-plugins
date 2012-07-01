@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import com.hilotec.elexis.kgview.data.KonsData;
 import com.hilotec.elexis.kgview.diagnoseliste.DiagnoselisteItem;
 
 import ch.elexis.Desk;
@@ -593,6 +594,13 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 								(DiagnoselisteItem) ti.getData();
 							it.setICPC(i.getCode());
 							setupTI(ti, it);
+						} else if (o instanceof KonsData) {
+							KonsData kd = (KonsData) o;
+							DiagnoselisteItem root = getRoot(typ);
+							DiagnoselisteItem di = root.createChild();
+							di.setText(kd.getDiagnose());
+							di.setDatum(kd.getKonsultation().getDatum());
+							createTI(di, null, di.getPosition());
 						} else {
 							DiagnoselisteItem d = (DiagnoselisteItem) o;
 							DiagnoselisteItem root = getRoot(typ);
@@ -606,6 +614,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 					@Override
 					public boolean accept(PersistentObject o) {
 						if (o instanceof IcpcCode) return allowICPC;
+						if (o instanceof KonsData) return true;
 						if (!(o instanceof DiagnoselisteItem)) return false;
 						DiagnoselisteItem d = (DiagnoselisteItem) o;
 

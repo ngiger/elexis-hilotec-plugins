@@ -284,4 +284,9 @@ public class KonsData extends PersistentObject {
 	public void setIstTelefon(boolean b) {
 		set(FLD_ISTTELEFON, (b ? "1" : "0"));
 	}
+
+	@Override
+	public boolean isDragOK() {
+		return true;
+	}
 }
