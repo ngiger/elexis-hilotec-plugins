@@ -37,6 +37,12 @@ public class DiagnoseDialog extends TitleAreaDialog {
 		comp.setLayout(new GridLayout(2, false));
 		comp.setLayoutData(SWTHelper.getFillGridData());
 
+		Label lblText = new Label(comp, 0);
+		lblText.setText("Text");
+		text = SWTHelper.createText(comp, 5, SWT.MULTI);
+		text.setText(di.getText());
+		text.setLayoutData(SWTHelper.getFillGridData());
+
 		if (showDate) {
 			Label lblDate = new Label(comp, 0);
 			lblDate.setText("Datum");
@@ -45,12 +51,6 @@ public class DiagnoseDialog extends TitleAreaDialog {
 			date.setDate(tt.getTime());
 		}
 
-		Label lblText = new Label(comp, 0);
-		lblText.setText("Text");
-		text = SWTHelper.createText(comp, 5, SWT.MULTI);
-		text.setText(di.getText());
-		text.setLayoutData(SWTHelper.getFillGridData());
-		
 		return comp;
 	}
 	

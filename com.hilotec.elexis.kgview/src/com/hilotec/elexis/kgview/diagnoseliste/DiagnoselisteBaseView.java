@@ -460,7 +460,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 
 	private void setupTI(TreeItem ti, DiagnoselisteItem di) {
 		if (showDate) {
-			ti.setText(di.getDatum() + ":" + di.getText());
+			ti.setText(di.getText() + " (" + di.getDatum() + ")");
 		} else {
 			ti.setText(di.getText());
 		}
