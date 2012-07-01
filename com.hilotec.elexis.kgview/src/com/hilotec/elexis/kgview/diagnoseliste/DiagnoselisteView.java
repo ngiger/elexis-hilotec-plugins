@@ -15,5 +15,6 @@ public class DiagnoselisteView extends DiagnoselisteBaseView {
 		allowImport = true;
 		allowImportCB = false;
 		allowImportDL = false;
+		allowICPC = false;
 	}
 }

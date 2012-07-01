@@ -44,10 +44,12 @@ import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
 import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
+import ch.elexis.icpc.IcpcCode;
 import ch.elexis.util.PersistentObjectDragSource;
 import ch.elexis.util.PersistentObjectDropTarget;
 import ch.elexis.util.SWTHelper;
 import ch.elexis.util.ViewMenus;
+import ch.rgw.tools.StringTool;
 
 /*
  * Helper class to draw multiline tree items, kind of ugly, but according
@@ -435,12 +437,16 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 	/** Koennen Eintraege aus der Zwischenablage importiert werden? */
 	protected boolean allowImportCB = true;
 
+	/** Koennen ICPC-Eintraege hinterlegt/angezeigt werden? */
+	protected boolean allowICPC = true;
+
 
 	private Tree tree;
 	Action actAdd;
 	Action actEdit;
 	Action actAddChild;
 	Action actDel;
+	Action actDelICPC;
 	Action actClear;
 	Action actMoveUp;
 	Action actMoveDown;
@@ -461,11 +467,13 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 
 
 	private void setupTI(TreeItem ti, DiagnoselisteItem di) {
-		if (showDate) {
-			ti.setText(di.getText() + " (" + di.getDatum() + ")");
-		} else {
-			ti.setText(di.getText());
+		String text = di.getText();
+		if (showDate)
+			text += " (" + di.getDatum() + ")";
+		if (allowICPC) {
+			text = "[" + di.getICPC() + "] " + text;
 		}
+		ti.setText(text);
 		ti.setData(di);
 	}
 
@@ -504,6 +512,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 
 		actEdit.setEnabled(en);
 		actDel.setEnabled(en);
+		actDelICPC.setEnabled(en && allowICPC);
 		actMoveUp.setEnabled(en);
 		actMoveDown.setEnabled(en);
 
@@ -574,16 +583,29 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		{
 					@Override
 					public void dropped(PersistentObject o, DropTargetEvent e) {
-						DiagnoselisteItem d = (DiagnoselisteItem) o;
-						DiagnoselisteItem root = getRoot(typ);
-						if (root == null) return;
+						if (o instanceof IcpcCode) {
+							IcpcCode i = (IcpcCode) o;
+							TreeItem ti = tree.getItem(
+									tree.toControl(e.x, e.y));
+							if (ti == null) return;
 
-						importItemTo(d, root);
-						updateTree();
+							DiagnoselisteItem it =
+								(DiagnoselisteItem) ti.getData();
+							it.setICPC(i.getCode());
+							setupTI(ti, it);
+						} else {
+							DiagnoselisteItem d = (DiagnoselisteItem) o;
+							DiagnoselisteItem root = getRoot(typ);
+							if (root == null) return;
+
+							importItemTo(d, root);
+							updateTree();
+						}
 					}
 
 					@Override
 					public boolean accept(PersistentObject o) {
+						if (o instanceof IcpcCode) return allowICPC;
 						if (!(o instanceof DiagnoselisteItem)) return false;
 						DiagnoselisteItem d = (DiagnoselisteItem) o;
 
@@ -653,7 +675,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		menus.createToolbar(actAdd, actMoveUp, actMoveDown);
 		menus.createMenu(actImportPA, actImportSA, actImportDL, actImportCB,
 				actClear);
-		menus.createControlContextMenu(tree, actAddChild, actDel);
+		menus.createControlContextMenu(tree, actAddChild, actDel, actDelICPC);
 
 		ElexisEventDispatcher.getInstance().addListeners(this);
 		updateTree();
@@ -726,7 +748,8 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				if (tree.getSelectionCount() == 0) return;
 				TreeItem ti = tree.getSelection()[0];
 				DiagnoselisteItem di = (DiagnoselisteItem) ti.getData();
-				(new DiagnoseDialog(getSite().getShell(), di, showDate)).open();
+				(new DiagnoseDialog(getSite().getShell(), di, showDate,
+						allowICPC)).open();
 				setupTI(ti, di);
 			}
 		};
@@ -740,7 +763,8 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				Patient p = ElexisEventDispatcher.getSelectedPatient();
 				DiagnoselisteItem root = DiagnoselisteItem.getRoot(p, typ);
 				DiagnoselisteItem di = root.createChild();
-				(new DiagnoseDialog(getSite().getShell(), di, showDate)).open();
+				(new DiagnoseDialog(getSite().getShell(), di, showDate,
+						false)).open();
 				createTI(di, null, di.getPosition());
 			}
 		};
@@ -756,7 +780,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 					DiagnoselisteItem ndi = di.createChild();
 
 					DiagnoseDialog dd =  new DiagnoseDialog(
-							getSite().getShell(), ndi, showDate);
+							getSite().getShell(), ndi, showDate, false);
 					if (dd.open() == DiagnoseDialog.OK) {
 						createTI(ndi, tis[0], ndi.getPosition());
 						// Parent expanden
@@ -787,6 +811,19 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 					di.delete();
 					tis[0].dispose();
 				}
+			}
+		};
+		actDelICPC = new Action("ICPC Code löschen") { {
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_REMOVEITEM));
+			}
+			@Override
+			public void run() {
+				TreeItem[] tis = tree.getSelection();
+				if (tis.length != 1) return;
+				DiagnoselisteItem di = (DiagnoselisteItem) tis[0].getData();
+				if (StringTool.isNothing(di.getICPC())) return;
+				di.setICPC("");
+				setupTI(tis[0], di);
 			}
 		};
 		actClear = new Action("Alle Löschen") {

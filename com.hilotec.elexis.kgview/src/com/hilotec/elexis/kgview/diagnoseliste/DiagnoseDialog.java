@@ -2,7 +2,6 @@ package com.hilotec.elexis.kgview.diagnoseliste;
 
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -12,7 +11,9 @@ import org.eclipse.swt.widgets.Text;
 
 import com.tiff.common.ui.datepicker.DatePickerCombo;
 
+import ch.elexis.icpc.IcpcCode;
 import ch.elexis.util.SWTHelper;
+import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
 public class DiagnoseDialog extends TitleAreaDialog {
@@ -20,13 +21,15 @@ public class DiagnoseDialog extends TitleAreaDialog {
 	private DatePickerCombo date;
 	private Text text;
 	private boolean showDate;
+	private boolean showICPC;
 	
 	public DiagnoseDialog(Shell parentShell, DiagnoselisteItem di,
-			boolean showDate)
+			boolean showDate, boolean showICPC)
 	{
 		super(parentShell);
 		this.di = di;
 		this.showDate = showDate;
+		this.showICPC = showICPC;
 	}
 	
 	@Override
@@ -49,6 +52,18 @@ public class DiagnoseDialog extends TitleAreaDialog {
 			date = new DatePickerCombo(comp, 0);
 			TimeTool tt = new TimeTool(di.getDatum());
 			date.setDate(tt.getTime());
+		}
+
+		if (showICPC) {
+			Label lblICPC = new Label(comp, 0);
+			lblICPC.setText("ICPC");
+
+			Label icpc = new Label(comp, 0);
+			String code = di.getICPC();
+			if (!StringTool.isNothing(code)) {
+				IcpcCode c = IcpcCode.load(code);
+				icpc.setText(c.getLabel());
+			}
 		}
 
 		return comp;

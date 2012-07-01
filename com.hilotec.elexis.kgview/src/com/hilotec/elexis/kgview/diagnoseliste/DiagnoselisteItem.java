@@ -166,8 +166,15 @@ public class DiagnoselisteItem extends PersistentObject {
 	public void setText(String text) {
 		set(FLD_TEXT, text);
 	}
-	
-	
+
+	public String getICPC() {
+		return StringTool.unNull(get(FLD_ICPC));
+	}
+
+	public void setICPC(String icpc) {
+		set(FLD_ICPC, icpc);
+	}
+
 	private int nextChildPos() {
 		int next = 0;
 		for (DiagnoselisteItem di: getChildren()) {
