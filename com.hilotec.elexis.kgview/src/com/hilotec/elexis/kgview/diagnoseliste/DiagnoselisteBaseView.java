@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -681,10 +682,30 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 
 		// Menus oben rechts in der View
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actAdd, actMoveUp, actMoveDown);
-		menus.createMenu(actImportPA, actImportSA, actImportDL, actImportCB,
-				actClear);
-		menus.createControlContextMenu(tree, actAddChild, actDel, actDelICPC);
+		ArrayList<IAction> m = new ArrayList<IAction>(5);
+		IAction[] a = new IAction[1];
+
+		// Toolbar zusammenstellen
+		if (canAdd) m.add(actAdd);
+		m.add(actMoveUp);
+		m.add(actMoveDown);
+		menus.createToolbar(m.toArray(a));
+		m.clear();
+
+		// View-Menu zusammenstellen
+		if (allowImport) m.add(actImportPA);
+		if (allowImport) m.add(actImportSA);
+		if (allowImportDL) m.add(actImportDL);
+		if (allowImportCB) m.add(actImportCB);
+		if (canClear) m.add(actClear);
+		menus.createMenu(m.toArray(a));
+		m.clear();
+
+		// Context menu
+		if (canAdd) m.add(actAddChild);
+		m.add(actDel);
+		if (allowICPC) m.add(actDelICPC);
+		menus.createControlContextMenu(tree, m.toArray(a));
 
 		ElexisEventDispatcher.getInstance().addListeners(this);
 		updateTree();
