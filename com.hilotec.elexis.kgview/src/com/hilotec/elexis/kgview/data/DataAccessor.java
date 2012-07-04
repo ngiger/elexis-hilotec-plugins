@@ -82,7 +82,7 @@ public class DataAccessor implements IDataAccess {
 					Integer o1 = oz(MedikarteHelpers.getOrdnungszahl(p1));
 					Integer o2 = oz(MedikarteHelpers.getOrdnungszahl(p2));
 
-					if (o1 != o2)
+					if (!o1.equals(o2))
 						return o1.compareTo(o2);
 
 					Artikel a1 = p1.getArtikel();
@@ -97,7 +97,7 @@ public class DataAccessor implements IDataAccess {
 								fm2.getBezeichnung());
 					
 					// Als letzte Moeglichkeit nehmen wir das Artikel-Label
-					return a1.getLabel().compareTo(a1.getLabel());
+					return a1.getLabel().compareTo(a2.getLabel());
 				}
 			});
 		}
