@@ -1,5 +1,6 @@
 package com.hilotec.elexis.kgview.medikarte;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -64,7 +65,20 @@ public class MedikarteHelpers {
 		}
 		qbe.orderBy(true, Prescription.DATE_FROM, Prescription.DATE_UNTIL,
 				Prescription.ARTICLE);
-		return qbe.execute();
+
+		// Medikamente ohne Fav-Medi Verknuepfung oder mit falsch formatierter
+		// Dosis rauswerfen 
+		List<Prescription> pl = qbe.execute();
+		Iterator<Prescription> i = pl.iterator();
+		while(i.hasNext()) {
+			Prescription p = i.next();
+			if (FavMedikament.load(p.getArtikel()) == null)
+				i.remove();
+			else if (p.getDosis().split("-").length != 4)
+				i.remove();
+		}
+
+		return pl;
 	}
 	
 	/**
