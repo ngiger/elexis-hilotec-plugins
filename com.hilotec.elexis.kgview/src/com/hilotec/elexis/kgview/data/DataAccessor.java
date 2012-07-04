@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.hilotec.elexis.kgview.ArchivKG;
 import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.diagnoseliste.DiagnoselisteItem;
 import com.hilotec.elexis.kgview.medikarte.MedikarteHelpers;
@@ -217,6 +218,22 @@ public class DataAccessor implements IDataAccess {
 		return new Result<Object>(res);
 	}
 	
+	/**
+	 * Problemlistentabelle generieren
+	 */
+	private Result<Object> generiereProblemliste(Patient pat) {
+		ArrayList<String[]> pl = new ArrayList<String[]>();
+		List<Konsultation> kl = ArchivKG.getKonsultationen(pat, false);
+		for (Konsultation k: kl) {
+			KonsData kd = KonsData.load(k);
+			if (kd == null || StringTool.isNothing(kd.getDiagnose())) continue;
+			pl.add(new String[] {k.getDatum(), kd.getDiagnose()});
+		}
+
+		// In Array umwandeln
+		return new Result<Object>(pl.toArray(new String[pl.size()][]));
+	}
+	
 	public Result<Object> getObject(String descriptor,
 			PersistentObject dependentObject, String dates, String[] params)
 	{
@@ -233,6 +250,10 @@ public class DataAccessor implements IDataAccess {
 				descriptor.equals("Diagnoseliste"))
 		{
 			return generiereDiagnoseliste((Patient) dependentObject);
+		} else if (dependentObject instanceof Patient &&
+				descriptor.equals("Problemliste"))
+		{
+			return generiereProblemliste((Patient) dependentObject);
 		}
 		if (!(dependentObject instanceof Konsultation)) {
 			return new Result<Object>(Result.SEVERITY.ERROR,
