@@ -131,12 +131,11 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 		Label lEinheitText = new Label(comp, SWT.BORDER);
 		lEinheitText.setText(fm.getEinheit());
 		
-		
+		tVon.setText(new TimeTool().toString(TimeTool.DATE_GER));
 		if (presc != null) {
 			int o = MedikarteHelpers.getOrdnungszahl(presc);
 			tOrd.setText(Integer.toString(o));
-			
-			tVon.setText(presc.getBeginDate());
+
 			tBis.setText(presc.getEndDate());
 			String[] dos = presc.getDosis().split("-");
 			tDoMorgen.setText(dos[0]);
@@ -156,7 +155,6 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			}
 		} else {
 			tOrd.setText(Integer.toString(fm.getOrdnungszahl()));
-			tVon.setText(new TimeTool().toString(TimeTool.DATE_GER));
 			tDoMorgen.setText("0");
 			tDoMittag.setText("0");
 			tDoAbend.setText("0");
