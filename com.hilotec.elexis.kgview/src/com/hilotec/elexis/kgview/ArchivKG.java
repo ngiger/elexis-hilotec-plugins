@@ -382,7 +382,10 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		public void run(){
 			Fall fall = (Fall)
 				ElexisEventDispatcher.getSelected(Fall.class);
-			if (fall == null || !fall.isOpen()) {
+			Patient pat = ElexisEventDispatcher.getSelectedPatient();
+			if (fall == null || !fall.isOpen() ||
+				!fall.getPatient().equals(pat))
+			{
 				MessageDialog.openError(null, "Kein offener Fall ausgewählt",
 					"Um eine neue Konsultation erstellen zu können, muss "+
 					"ein offener Fall ausgewählt werden");
