@@ -56,6 +56,12 @@ public class NeueKonsDialog extends TitleAreaDialog {
 		Composite comp = new Composite(parent, 0);
 		comp.setLayout(new GridLayout(2, false));
 		
+		new Label(comp, SWT.NONE).setText("Patient");
+		new Label(comp, SWT.NONE).setText(fall.getPatient().getLabel());
+
+		new Label(comp, SWT.NONE).setText("Fall");
+		new Label(comp, SWT.NONE).setText(fall.getLabel());
+
 		new Label(comp, SWT.NONE).setText("Datum");
 		datum = new DatePickerCombo(comp, SWT.NONE);
 		
