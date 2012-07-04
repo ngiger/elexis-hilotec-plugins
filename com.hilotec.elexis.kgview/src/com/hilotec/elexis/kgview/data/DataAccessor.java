@@ -73,15 +73,18 @@ public class DataAccessor implements IDataAccess {
 		for (String ev: evs) {
 			List<Prescription> pl = prescs.get(ev);
 			Collections.sort(pl, new Comparator<Prescription>() {
+				// Helper zum Sortieren weil wir die 0 ganz unten wollen
+				private int oz(int o) {
+					return (o == 0 ? Integer.MAX_VALUE : o);
+				}
 				@Override
 				public int compare(Prescription p1, Prescription p2) {
-					Integer o1 = MedikarteHelpers.getOrdnungszahl(p1);
-					Integer o2 = MedikarteHelpers.getOrdnungszahl(p2);
-					
-					// - weil die Grössten oben sein sollen
+					Integer o1 = oz(MedikarteHelpers.getOrdnungszahl(p1));
+					Integer o2 = oz(MedikarteHelpers.getOrdnungszahl(p2));
+
 					if (o1 != o2)
-						return -o1.compareTo(o2);
-					
+						return o1.compareTo(o2);
+
 					Artikel a1 = p1.getArtikel();
 					Artikel a2 = p2.getArtikel();
 					
