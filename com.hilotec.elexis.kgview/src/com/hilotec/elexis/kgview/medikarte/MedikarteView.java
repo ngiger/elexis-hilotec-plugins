@@ -22,6 +22,7 @@ import org.eclipse.ui.part.ViewPart;
 import com.hilotec.elexis.kgview.data.FavMedikament;
 import com.hilotec.elexis.kgview.medikarte.MedikarteEintragComparator.Sortierung;
 
+import ch.elexis.Desk;
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
@@ -129,6 +130,9 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 	private void makeActions() {
 		// Aktion zum Bearbeiten einer Verschreibung
 		actEdit = new Action("Bearbeiten", Action.AS_PUSH_BUTTON) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_EDIT));
+			}
 			@Override
 			public void run() {
 				TableItem[] sel = table.getSelection();
@@ -142,6 +146,9 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		
 		// Aktion zum Stoppen einer Verschreibung
 		actStop = new Action("Stoppen", Action.AS_PUSH_BUTTON) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_AUSRUFEZ_ROT));
+			}
 			@Override
 			public void run() {
 				TableItem[] tis = table.getSelection();
@@ -155,6 +162,9 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		
 		// Aktion zum Loeschen von Verschreibungen
 		actDelete = new Action("Löschen", Action.AS_PUSH_BUTTON) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_DELETE));
+			}
 			@Override
 			public void run() {
 				TableItem[] tis = table.getSelection();
@@ -172,36 +182,34 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		
 		// Aktion fuer den Filter-Button
 		actFilter = new Action("Alle anzeigen", Action.AS_CHECK_BOX) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_FILTER));
+				setChecked(true);
+			}
 			@Override
 			public void run() {
-				if (isChecked()) {
-					alle = true;
-					// TODO: Async?
-					refresh();
-				} else {
-					alle = false;
-					refresh();
-				}
+				alle = !isChecked();
+				refresh();
 			}
 		};
 
 		// Aktion fuer den Geloeschte anzeigen Button
 		actShowDel = new Action("Gelöschte anzeigen", Action.AS_CHECK_BOX) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_BOOK));
+			}
 			@Override
 			public void run() {
-				if (isChecked()) {
-					geloescht = true;
-					// TODO: Async?
-					refresh();
-				} else {
-					geloescht = false;
-					refresh();
-				}
+				geloescht = isChecked();
+				refresh();
 			}
 		};
 		
 		// Aktion fuer den Drucken-Button
 		actDrucken = new Action("Drucken", Action.AS_PUSH_BUTTON) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_PRINTER));
+			}
 			@Override
 			public void run() {
 				Konsultation kons = (Konsultation)
@@ -233,6 +241,9 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 
 		// Aktion fuer die alphabetische Sortierung der Eintraege
 		actSortAlph = new Action("Alphabetisch sortieren", Action.AS_CHECK_BOX) {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_ARROWDOWN));
+			}
 			@Override
 			public void run() {
 				sortAlph = isChecked();
