@@ -63,8 +63,6 @@ public class MedikarteHelpers {
 			qbe.add(Prescription.DATE_UNTIL, Query.EQUALS, "");
 			qbe.endGroup();
 		}
-		qbe.orderBy(true, Prescription.DATE_FROM, Prescription.DATE_UNTIL,
-				Prescription.ARTICLE);
 
 		// Medikamente ohne Fav-Medi Verknuepfung oder mit falsch formatierter
 		// Dosis rauswerfen 

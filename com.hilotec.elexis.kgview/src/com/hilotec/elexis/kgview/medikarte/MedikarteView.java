@@ -1,5 +1,6 @@
 package com.hilotec.elexis.kgview.medikarte;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
@@ -19,6 +20,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 import com.hilotec.elexis.kgview.data.FavMedikament;
+import com.hilotec.elexis.kgview.medikarte.MedikarteEintragComparator.Sortierung;
 
 import ch.elexis.actions.ElexisEvent;
 import ch.elexis.actions.ElexisEventDispatcher;
@@ -44,6 +46,8 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 	private boolean alle = false;
 	// Geloeschte auch anzeigen?
 	private boolean geloescht = false;
+	// Alphabetisch sortieren
+	private boolean sortAlph = false;
 	private Patient patient;
 	
 	private Action actEdit;
@@ -52,6 +56,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 	private Action actFilter;
 	private Action actShowDel;
 	private Action actDrucken;
+	private Action actSortAlph;
 	
 	@Override
 	public void createPartControl(Composite parent) {
@@ -110,7 +115,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		
 		// Menus oben rechts in der View
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actFilter, actShowDel, actDrucken);
+		menus.createToolbar(actFilter, actShowDel, actDrucken, actSortAlph);
 		
 		// Contextmenu fuer Tabelle
 		menus.createControlContextMenu(table, actEdit, actStop, actDelete);
@@ -225,6 +230,15 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 				tv.openDocument(doc);
 			}
 		};
+
+		// Aktion fuer die alphabetische Sortierung der Eintraege
+		actSortAlph = new Action("Alphabetisch sortieren", Action.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				sortAlph = isChecked();
+				refresh();
+			}
+		};
 	}
 
 	/** Formatiere Volltext (mit \n) fuer Darstellung in Tabelle. */
@@ -239,7 +253,10 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 		// Medikation zu Patient zusammensuchen.
 		List<Prescription> l = MedikarteHelpers.
 			medikarteMedikation(patient, alle, geloescht);
-		
+		Sortierung s = Sortierung.CHRONOLOGISCH;
+		if (sortAlph) s = Sortierung.ALPHABETISCH;
+		Collections.sort(l, new MedikarteEintragComparator(s));
+
 		// Tabelle neu befuellen
 		for (Prescription p: l) {
 			FavMedikament fm = FavMedikament.load(p.getArtikel());

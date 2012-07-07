@@ -253,6 +253,19 @@ public class MedikarteEintragDialog extends TitleAreaDialog {
 			tDoAbend.getText() + "-" + tDoNacht.getText();
 		dosierung = dosierung.toUpperCase();
 		String bemerkung = cEV.getItem(cEV.getSelectionIndex());
+		int ordnungszahl = Integer.parseInt(tOrd.getText());
+
+		// Spezialfall, nur Ordnungszahl geaendert, muss nicht aktenkundig sein
+		if (presc != null && presc.getDosis().equals(dosierung) &&
+			presc.getBeginDate().equals(tVon.getText()) &&
+			presc.getEndDate().equals(tBis.getText()) &&
+			presc.getBemerkung().equals(bemerkung) &&
+			MedikarteHelpers.getPZweck(presc).equals(tZweck.getText()))
+		{
+			MedikarteHelpers.setOrdnungszahl(presc, ordnungszahl);
+			close();
+			return;
+		}
 
 		if (presc != null && !presc.isDeleted() &&
 				presc.getEndDate().equals(""))
