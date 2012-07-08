@@ -49,6 +49,7 @@ public class NeueKonsDialog extends TitleAreaDialog {
 		super(parentShell);
 		this.kons = kons;
 		data = new KonsData(kons);
+		fall = kons.getFall();
 	}
 
 	@Override
