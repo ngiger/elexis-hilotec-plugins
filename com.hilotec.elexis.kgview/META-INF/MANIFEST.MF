@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Hilotec_KG
 Bundle-SymbolicName: com.hilotec.elexis.kgview;singleton:=true
-Bundle-Version: 0.1
+Bundle-Version: 0.2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: ch.elexis,
  org.eclipse.ui,
