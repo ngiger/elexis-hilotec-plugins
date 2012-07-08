@@ -1,12 +1,17 @@
 package com.hilotec.elexis.kgview.data;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import ch.elexis.Hub;
+import ch.elexis.data.Anwender;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.PersistentObject;
 import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
 public class KonsData extends PersistentObject {
-	public static final String VERSION = "7";
+	public static final String VERSION = "8";
 	public static final String PLUGIN_ID = "com.hilotec.elexis.kgview";
 	
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_KONSDATA";
@@ -25,6 +30,17 @@ public class KonsData extends PersistentObject {
 	public static final String FLD_KONSZEIT			= "KonsZeit";
 	public static final String FLD_KONSBEGINN		= "KonsBeginn";
 	public static final String FLD_ISTTELEFON		= "IstTelefon";
+	public static final String FLD_AUTOR			= "Autor";
+
+	// Felder an denen Aenderungen nur durch den Autor durchgefuehrt werden
+	// duerfen.
+	private static final String[] KGFIELDS = {
+		FLD_JETZLEIDEN, FLD_JETZLEIDEN_ICPC, FLD_ALLGSTATUS, FLD_LOKSTATUS,
+		FLD_PROZEDERE, FLD_PROZEDERE_ICPC, FLD_DIAGNOSE, FLD_DIAGNOSE_ICPC,
+		FLD_THERAPIE, FLD_VERLAUF, FLD_ROENTGEN, FLD_EKG,
+	};
+	private static final HashSet<String> KGFIELD_SET = new HashSet<String>(
+			Arrays.asList(KGFIELDS));
 
 	static {
 		addMapping(TABLENAME,
@@ -42,7 +58,8 @@ public class KonsData extends PersistentObject {
 				"EKG",
 				"KonsZeit",
 				"KonsBeginn",
-				"IstTelefon");
+				"IstTelefon",
+				"Autor");
 		checkTable();
 	}
 
@@ -65,7 +82,8 @@ public class KonsData extends PersistentObject {
 			+ "  EKG			TEXT, "
 			+ "  KonsZeit 		BIGINT DEFAULT 0, "
 			+ "  KonsBeginn     BIGINT,  "
-			+ "  IstTelefon		CHAR(1) DEFAULT '0' "
+			+ "  IstTelefon		CHAR(1) DEFAULT '0', "
+			+ "  Autor          VARCHAR(25)  "
 			+ ");"
 			+ "INSERT INTO " + TABLENAME + " (ID, JetzLeiden) VALUES "
 			+ "	('VERSION', '" + VERSION + "');";
@@ -112,6 +130,12 @@ public class KonsData extends PersistentObject {
 			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '7' WHERE"
 			+ "  ID LIKE 'VERSION';";
 	
+	private static final String up_7to8 =
+		"ALTER TABLE " + TABLENAME
+			+ "  ADD Autor		VARCHAR(25) AFTER IstTelefon;"
+			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '8' WHERE"
+			+ "  ID LIKE 'VERSION';";
+
 	private static void checkTable() {
 		KonsData check = load("VERSION");
 		if (!check.exists()) {
@@ -129,6 +153,8 @@ public class KonsData extends PersistentObject {
 				createOrModifyTable(up_5to6);
 			if (check.getJetzigesLeiden().equals("6"))
 				createOrModifyTable(up_6to7);
+			if (check.getJetzigesLeiden().equals("7"))
+				createOrModifyTable(up_7to8);
 		}
 	}
 
@@ -235,7 +261,15 @@ public class KonsData extends PersistentObject {
 		String tel = get(FLD_ISTTELEFON);
 		return !(StringTool.isNothing(tel) || tel.equals("0"));
 	}
-	
+
+	public Anwender getAutor() {
+		String id = get(FLD_AUTOR);
+		if (!StringTool.isNothing(id)) {
+			Anwender aw = Anwender.load(id);
+			return aw;
+		}
+		return null;
+	}
 
 	public void setJetzigesLeiden(String txt) {
 		set(FLD_JETZLEIDEN, txt);
@@ -283,6 +317,51 @@ public class KonsData extends PersistentObject {
 	
 	public void setIstTelefon(boolean b) {
 		set(FLD_ISTTELEFON, (b ? "1" : "0"));
+	}
+
+	public void setAutor(Anwender anw) {
+		String id = "";
+		if (anw != null) id = anw.getId();
+		set(FLD_AUTOR, id);
+	}
+
+	/**
+	 * Wir ueberschreiben hier set() um sicherzustellen dass nur der Autor
+	 * einen KG-Eintrag anpassen kann, und um den Autor festzuhalten falls
+	 * das noch nicht geschehen ist.
+	 */
+	@Override
+	public boolean set(final String field, String value) {
+		if (KGFIELD_SET.contains(field)) {
+			Anwender au = getAutor();
+			if (au == null) {
+				// Noch kein Autor gesetzt, auf dieser Kons, setze auf
+				// aktuellen User
+				setAutor(Hub.actUser);
+			} else if (!au.equals(Hub.actUser)) {
+				// Ungueltiger User
+				throw new RuntimeException("Nur Autor kann " +
+						"Krankengeschichte veraendern!");
+			} else if (StringTool.isNothing(value)) {
+				// Wenn das Feld leer ist, und alle anderen KG-Felder leer sind,
+				// wird der Autor zurueckgesesetzt.
+				boolean nonempty = false;
+				for (int i = 0; i < KGFIELDS.length && nonempty; i++) {
+					nonempty |= !StringTool.isNothing(get(KGFIELDS[i]));
+				}
+				if (!nonempty) set(FLD_AUTOR, "");
+			}
+		}
+		return super.set(field, value);
+	}
+
+	/**
+	 * Prueft ob die KG dieser Konsultation vom aktuellen Benutzer bearbeitet
+	 * werden darf
+	 */
+	public boolean isEditOK() {
+		Anwender au = getAutor();
+		return au == null || au.equals(Hub.actUser);
 	}
 
 	@Override

@@ -34,10 +34,12 @@ import ch.elexis.actions.ElexisEventDispatcher;
 import ch.elexis.actions.ElexisEventListener;
 import ch.elexis.actions.Messages;
 import ch.elexis.actions.Heartbeat.HeartListener;
+import ch.elexis.data.Anwender;
 import ch.elexis.data.Fall;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
 import ch.elexis.util.ViewMenus;
+import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
 /**
@@ -298,7 +300,14 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 			sb.append(" " + k.getFall().getAbrechnungsSystem());
 		}
 		
-		sb.append(" (" + k.getAuthor() + ")");
+		String sAutor = "";
+		Anwender autor = kd.getAutor();
+		if (autor != null) {
+			sAutor = autor.getKuerzel();
+			if (StringTool.isNothing(sAutor))
+				sAutor = autor.getLabel();
+		}
+		sb.append(" (" + sAutor + ")");
 		sb.append("<br/>");
 		
 		addParagraph("Jetziges Leiden", kd.getJetzigesLeiden(),

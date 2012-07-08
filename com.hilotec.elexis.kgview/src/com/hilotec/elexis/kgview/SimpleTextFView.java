@@ -14,6 +14,7 @@ import org.eclipse.ui.part.ViewPart;
 
 
 abstract public class SimpleTextFView extends ViewPart {
+	private boolean canEdit = true;
 	private Text textfield;
 	private String origPName;
 	protected Composite area;
@@ -63,7 +64,7 @@ abstract public class SimpleTextFView extends ViewPart {
 	public void setFocus() {}
 	
 	protected void setEnabled(boolean en) {
-		textfield.setEnabled(en);
+		textfield.setEnabled(en && canEdit);
 		if (!en) {
 			setText("");
 		}
@@ -98,5 +99,13 @@ abstract public class SimpleTextFView extends ViewPart {
 	protected boolean isEmpty() {
 		String text = textfield.getText();
 		return text == null || text.isEmpty();
+	}
+
+	protected void setCanEdit(boolean edit) {
+		canEdit = edit;
+	}
+
+	protected boolean getCanEdit() {
+		return canEdit;
 	}
 }

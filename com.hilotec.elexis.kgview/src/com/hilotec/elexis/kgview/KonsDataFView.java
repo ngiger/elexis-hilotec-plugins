@@ -163,7 +163,7 @@ public abstract class KonsDataFView extends SimpleTextFView
 		
 		clearIcpc();
 		if (icpcfield != null)
-			icpc_list.setEnabled(en);
+			icpc_list.setEnabled(en && getCanEdit());
 	}
 
 	/** Konsultation wurde deselektiert */
@@ -175,6 +175,7 @@ public abstract class KonsDataFView extends SimpleTextFView
 	/** Konsultation wurde selektiert */
 	private void konsSelected(Konsultation kons) {
 		data = new KonsData(kons);
+		setCanEdit(data.isEditOK());
 		setEnabled(true);
 		
 		loadIcpc();
