@@ -114,6 +114,12 @@ public class Problemliste extends ViewPart
 		ElexisEventDispatcher.getInstance().addListeners(this);
 	}
 
+	@Override
+	public void dispose() {
+		ElexisEventDispatcher.getInstance().removeListeners(this);
+		super.dispose();
+	}
+
 	public void setFocus() { }
 
 	/** Selection Listener um bei Patientenwechsel zu aktualisieren */

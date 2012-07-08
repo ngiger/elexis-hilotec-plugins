@@ -309,6 +309,7 @@ public class FavMedikamentListe extends ViewPart
 	@Override
 	public void dispose() {
 		ElexisEventDispatcher.getInstance().removeListeners(this);
+		super.dispose();
 	}
 	
 	@Override

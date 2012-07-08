@@ -960,6 +960,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 	@Override
 	public void dispose() {
 		ElexisEventDispatcher.getInstance().removeListeners(this);
+		super.dispose();
 	}
 
 	public void catchElexisEvent(ElexisEvent ev) {

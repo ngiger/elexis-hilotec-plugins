@@ -307,6 +307,7 @@ public class MedikarteView extends ViewPart implements ElexisEventListener {
 	@Override
 	public void dispose() {
 		ElexisEventDispatcher.getInstance().removeListeners(this);
+		super.dispose();
 	}
 	
 	public void catchElexisEvent(ElexisEvent ev) {

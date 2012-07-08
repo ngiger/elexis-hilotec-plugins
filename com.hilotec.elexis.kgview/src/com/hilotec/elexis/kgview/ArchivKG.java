@@ -460,6 +460,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	@Override
 	public void dispose() {
 		if (actAutoAkt.isChecked()) Hub.heart.removeListener(this);
+		ElexisEventDispatcher.getInstance().removeListeners(this);
 		super.dispose();
 	}
 	
