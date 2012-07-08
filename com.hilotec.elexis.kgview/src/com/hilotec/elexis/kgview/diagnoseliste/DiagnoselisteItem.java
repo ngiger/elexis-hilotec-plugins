@@ -175,7 +175,7 @@ public class DiagnoselisteItem extends PersistentObject {
 		set(FLD_ICPC, icpc);
 	}
 
-	private int nextChildPos() {
+	public int nextChildPos() {
 		int next = 0;
 		for (DiagnoselisteItem di: getChildren()) {
 			next = Math.max(next, di.getPosition() + 1);
@@ -193,13 +193,15 @@ public class DiagnoselisteItem extends PersistentObject {
 		return q.execute();
 	}
 	
-	public DiagnoselisteItem getChildBySrc(DiagnoselisteItem src) {
-		for (DiagnoselisteItem i: getChildren()) {
-			if (i.getSource().equals(src.getId())) {
-				return i;
-			}
-		}
-		return null;
+	public DiagnoselisteItem getBySrc(DiagnoselisteItem src) {
+		Query<DiagnoselisteItem> q =
+			new Query<DiagnoselisteItem>(DiagnoselisteItem.class);
+		q.add(FLD_PATIENT, Query.EQUALS, get(FLD_PATIENT));
+		q.and();
+		q.add(FLD_SOURCE, Query.EQUALS, src.getId());
+		List<DiagnoselisteItem> l = q.execute();
+		if (l.isEmpty()) return null;
+		return l.get(0);
 	}
 
 	public DiagnoselisteItem createChild() {
@@ -246,7 +248,17 @@ public class DiagnoselisteItem extends PersistentObject {
 			}
 		}
 	}
-	
+
+	/**
+	 * Prueft ob dieses Item ein (direktes or indirektes) Kindelement von p ist.
+	 */
+	public boolean isDescendantOf(DiagnoselisteItem p) {
+		if (equals(p)) return true;
+		DiagnoselisteItem par = getParent();
+		if (par == null) return false;
+		return par.isDescendantOf(p);
+	}
+
 	public void moveDown() {
 		DiagnoselisteItem parent = getParent();
 		if (parent == null) return;
@@ -263,17 +275,24 @@ public class DiagnoselisteItem extends PersistentObject {
 		}
 	}
 	
-	public boolean delete() {
-		DiagnoselisteItem parent = getParent();
-		if (parent == null) return false;
-
-		int pos = getPosition();
-		if (super.delete())
-
-		for (DiagnoselisteItem di: parent.getChildren()) {
+	/**
+	 * Schiebt das Element c ganz nach unten, so dass es einfach geloescht
+	 * werden kann.
+	 * @param c Kindelement das zum loeschen vorbereitet werden soll
+	 */
+	public void removeChild(DiagnoselisteItem c) {
+		int pos = c.getPosition();
+		c.setPosition(nextChildPos());
+		for (DiagnoselisteItem di: getChildren()) {
 			int p = di.getPosition();
 			if (p > pos) di.setPosition(p - 1);
 		}
+	}
+
+	public boolean delete() {
+		DiagnoselisteItem parent = getParent();
+		if (parent == null) return false;
+		if (super.delete()) parent.removeChild(this);
 		return true;
 	}
 

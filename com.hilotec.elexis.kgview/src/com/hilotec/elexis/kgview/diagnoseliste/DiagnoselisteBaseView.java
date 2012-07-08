@@ -585,29 +585,47 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		{
 					@Override
 					public void dropped(PersistentObject o, DropTargetEvent e) {
-						if (o instanceof IcpcCode) {
-							IcpcCode i = (IcpcCode) o;
-							TreeItem ti = tree.getItem(
-									tree.toControl(e.x, e.y));
-							if (ti == null) return;
+						// Ausgewaehltes Element suchen
+						TreeItem selTi = tree.getItem(
+								tree.toControl(e.x, e.y));
+						DiagnoselisteItem it = null;
+						if (selTi != null)
+							it = (DiagnoselisteItem) selTi.getData();
+						else
+							it = getRoot(typ);
 
-							DiagnoselisteItem it =
-								(DiagnoselisteItem) ti.getData();
+						if (o instanceof IcpcCode && selTi != null) {
+							// ICPC2 code
+							IcpcCode i = (IcpcCode) o;
 							it.setICPC(i.getCode());
-							setupTI(ti, it);
+							setupTI(selTi, it);
 						} else if (o instanceof KonsData) {
+							// Eintrag aus Problemliste
 							KonsData kd = (KonsData) o;
-							DiagnoselisteItem root = getRoot(typ);
-							DiagnoselisteItem di = root.createChild();
+							DiagnoselisteItem di = it.createChild();
 							di.setText(kd.getDiagnose());
 							di.setDatum(kd.getKonsultation().getDatum());
-							createTI(di, null, di.getPosition());
-						} else {
+							createTI(di, selTi, di.getPosition());
+						} else if (o instanceof DiagnoselisteItem) {
+							// Eintrag aus Diagnoseliste
 							DiagnoselisteItem d = (DiagnoselisteItem) o;
-							DiagnoselisteItem root = getRoot(typ);
-							if (root == null) return;
+							if (d.getTyp() != typ) {
+								// Aus anderer DL View
+								importItemTo(d, it);
+							} else {
+								// Innerhalb selber DL View
+								DiagnoselisteItem par = d.getParent();
+								if (par == null) return;
 
-							importItemTo(d, root);
+								// Aufpassen dass wir keine Zyklen einfuehren
+								if (it.isDescendantOf(d)) return;
+
+								par.removeChild(d);
+								if (!par.equals(it)) {
+									d.setPosition(it.nextChildPos());
+									d.setParent(it);
+								}
+							}
 							updateTree();
 						}
 					}
@@ -619,19 +637,15 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 						if (!(o instanceof DiagnoselisteItem)) return false;
 						DiagnoselisteItem d = (DiagnoselisteItem) o;
 
-						// Droppen nur erlauben wenn es sich um ein Toplevel
-						// Element handelt
-						DiagnoselisteItem root = getRoot(d.getTyp());
-						if (root == null || !d.getParent().equals(root))
-							return false;
-
 						// Pruefen ob der Typ importiert werden kann
-						int typ = d.getTyp();
-						if (typ == DiagnoselisteItem.TYP_DIAGNOSELISTE && allowImportDL)
+						int t = d.getTyp();
+						if (t == DiagnoselisteItem.TYP_DIAGNOSELISTE && allowImportDL)
 							return true;
 						else if (allowImport &&
-								(typ == DiagnoselisteItem.TYP_PERSANAMNESE ||
-								 typ == DiagnoselisteItem.TYP_SYSANAMNESE))
+								(t == DiagnoselisteItem.TYP_PERSANAMNESE ||
+								 t == DiagnoselisteItem.TYP_SYSANAMNESE))
+							return true;
+						else if (typ == t)
 							return true;
 
 						return false;
@@ -645,19 +659,12 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				TreeItem[] tis = tree.getSelection();
 				if (tis == null) return null;
 
-				DiagnoselisteItem root = getRoot(typ);
 				ArrayList<PersistentObject> res =
 					new ArrayList<PersistentObject>(tis.length);
 				// Auswahl in Liste von Items umwandeln
 				for (TreeItem ti: tis) {
 					DiagnoselisteItem di = (DiagnoselisteItem) ti.getData();
 					res.add(di);
-
-					// Wenn es sich nicht um ein Toplevel-Item handelt, brechen
-					// wir ab
-					if (!di.getParent().equals(root)) {
-						return null;
-					}
 				}
 				return res;
 			}
@@ -730,7 +737,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 	private void importItemTo(DiagnoselisteItem item,
 			DiagnoselisteItem newParent)
 	{
-		DiagnoselisteItem di = newParent.getChildBySrc(item);
+		DiagnoselisteItem di = newParent.getBySrc(item);
 		if (di == null) {
 			di = newParent.createChildFrom(item);
 		}
