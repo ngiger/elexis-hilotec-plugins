@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<service:service category='feature' id='com.hilotec.elexis.kgview' name='KG Hilotec' provider='support@hilotec.com' xsi:schemaLocation='http://www.medelexis.ch/services ../medelexis-commons/rsc/service.xsd ' xmlns:service='http://www.medelexis.ch/services' type='KG-Führung' version='2.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+  <service:conditions>
+  	<service:roles>
+  		<service:role priceClass='free'>
+  			<service:pricePerDB amount='65.00' currency='CHF'/>
+  			<service:pricePerMandator amount='50.00' currency='CHF'/>
+  		</service:role>
+  	</service:roles>
+  </service:conditions>
+  <service:description>strukturiertere Erfassung der KG von Hilotec</service:description>
+<service:docURL>http://www.hilotec.com/</service:docURL></service:service>
+'
