@@ -306,7 +306,7 @@ public class TextPlugin implements ITextPlugin {
 		String editor = Hub.localCfg.get(Preferences.P_EDITOR, "");
 		String argstr = Hub.localCfg.get(Preferences.P_EDITARGS, "");
 		String baseName = "open_odf.sh";
-		if (System.getProperty("os.name").indexOf("win") >= 0)
+		if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0)
 			baseName = "open_odf.bat";
 		String scriptFile =
 			PlatformHelper.getBasePath(pluginID) + File.separator + "rsc" + File.separator
