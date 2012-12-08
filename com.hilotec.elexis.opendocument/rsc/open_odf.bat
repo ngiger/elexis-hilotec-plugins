@@ -5,4 +5,4 @@ rem under windows as a non priviledged user
 rem therefore MSWord must be closed before starting this application
 rem or should I kill it here?
 set EXE_TO_USE=%1
-echo %EXE_TO_USE% %2 %3 %4 %5 %6 %7 %8 %9
+%EXE_TO_USE% %2 %3 %4 %5 %6 %7 %8 %9
