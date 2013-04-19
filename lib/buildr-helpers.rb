@@ -1,0 +1,292 @@
+#!/usr/bin/env jruby
+#encoding: utf-8
+# Copyright 2011 by Niklaus Giger <niklaus.giger@member.fsf.org
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http://www.eclipse.org/legal/epl-v10.html
+
+WithDebian     = false  # whether to generate a Debian package  
+WithAdditions  = false # whether to generate the medelexis additions
+WithZip        = false # whether to generate a big zip with an executable
+WithP2Site     = true # whether to generate a p2site for elexis updates
+DefaultEclipse = "http://ftp.medelexis.ch/downloads_opensource/eclipse/eclipse-rcp-indigo-SR2-"
+ENV['JAVA_OPTS'] = '-Xmx512m'
+require 'rexml/document'
+require 'rubygems'
+require 'net/ldap'
+require 'elexis'
+Elexis::readBuildCfg
+
+include REXML
+
+TimeStamp = Time.now.strftime('%Y%m%d') # Cannot use '-' because of p2site conventions
+@@skipName = "BuildCfg['SkipPlugins']"
+if BuildCfg['SkipPlugins']
+  @@skipPlugins = BuildCfg['SkipPlugins'].split(',')
+  $skipPlugins = @@skipPlugins
+  puts "BuildCfg['SkipPlugins'] defined #{$skipPlugins.inspect}"
+else
+  @@skipPlugins = []
+  $skipPlugins = @@skipPlugins
+end
+
+def get_version_info(dirName)
+  saved   = Dir.pwd
+  version = '-version'
+  branch  = 'unkown-branch'
+  local   = '-changed'
+  ENV['LANGUAGE']='C'
+  Dir.chdir(dirName)
+  raise "#{dirName} is not under Mercurial" unless File.directory?(".hg")
+  info = `hg summary`
+  info.split("\n").each{ 
+    |x|
+    splitted=x.split(' ')
+    if /^parent/.match(x)
+      if splitted.size==3 and !'tip'.eql?(splitted[2]) # is a tag
+	version = splitted[2]
+      else
+	version = splitted[1].split(':')[1]
+      end
+    end
+    branch = splitted[1] if /^branch/.match(x)
+    local  = '' if /^commit.+\(clean\)/.match(x)
+  }
+  info = `hg log --template "{latesttag}\n" -l 1`
+ensure 
+  Dir.chdir(saved)
+  #  Don't return local. Why?
+  #  -  buildfile is usually generated again
+  #  -  We would have to collect status of sub repositories, too
+  #  return "#{branch}-#{version}"
+  return "#{branch}-#{version}#{local}"
+end
+
+DryRun = false
+def system(cmd, mayFail=false)
+  cmd2history =  "cd #{Dir.pwd} && #{cmd} # mayFail #{mayFail} #{DryRun ? 'DryRun' : 'executing'}"
+  puts cmd2history
+  if DryRun then return
+  else res =Kernel.system(cmd)
+  end
+  if !res and !mayFail then
+    puts "#{__FILE__} running #{cmd} #{mayFail} failed"
+    exit
+  end
+  return res
+end
+
+
+def getManifestFromFile(fileName = _(MANIFEST_MF))
+  if File.exists?(fileName)
+    mf = ::Buildr::Packaging::Java::Manifest.parse(File.read(_(MANIFEST_MF)))
+    mf.sections[0].each { |id,value| manifest[id] = value }
+  end
+end
+
+def neededPlugInsFromFeature(fileName)
+  doc = REXML::Document.new IO.readlines(fileName).join('') if  File.exists?(fileName)
+  needed = []
+  doc.root.elements.each('plugin'){ |x| needed << x.attributes['id'] } if doc.root
+  puts "neededPlugInsFromFeature return #{needed.inspect}" if $VERBOSE
+  needed
+end
+
+def addDependenciesFromProject(projectsWeDependOn)
+  projectsWeDependOn.each {
+    |x|
+      if project(x).compile.target
+	  compile.with project.dependencies, project(x),  project(x).compile.target
+	  eclipse.exclude_libs += [project(x).compile.target] 
+      else
+	compile.with project(x) if Dir.glob(_('src')).size > 0
+      end
+  }
+end
+
+def handleMessages(pkgType = :plugin)
+    Dir.glob(_('src/**/messages*.properties')).each { |x|
+        package(pkgType).include x, :as => /src\/(.*)/.match(x)[1]
+      } if false
+end
+
+def handleFeature
+  package(:feature).feature_xml = _('feature.xml') if defined?(Buildr4OSGi)
+end
+
+def skipGenBundle(projName)
+  ['ch.elexis.scripting.scala',
+   # 'ch.elexis.scripting.beanshell',
+   'ch.rgw.OOWrapper',
+   'at.medevit.medelexis.ui.statushandler.qualityfeedback',
+   'elexis_trustx_embed',
+   ].each { |x| return true if projName.eql?(x) }
+  false
+end
+
+def isPartOfKern(projName)
+  projName = File.basename(projName)
+  return projName.eql?('ch.elexis')   ||
+      projName.index('connector')     ||
+      projName.eql?('ch.rgw.utility') ||
+      projName.eql?('ch.elexis.importer.div') ||
+      projName.eql?('ch.elexis.core') ||
+      projName.eql?('ch.elexis.core.feature')
+end
+
+def isScalaExample(projName)
+  projName = File.basename(projName)
+  return projName.eql?('ch.elexis.scala.runtime') ||
+      projName.eql?('ch.elexis.impfplan') ||  # Does not work as ImpfplanController.scala ist not found when compiling java
+      projName.eql?('ch.elexis.scripting.scala')
+end
+  
+def isNotSupportedUnder_2_1_x(projName)
+  projName = File.basename(projName)
+  res = projName.eql?('ch.marlovits.addressSearch') ||
+      projName.eql?('ch.marlovits.plz')  ||
+      projName.eql?('ch.marlovits.addressSearch')
+  res
+end
+
+def isTestProject(projName)
+  projName = File.basename(projName)
+  return /test/i.match(projName) != nil
+end
+
+def isSwissProject(projName)
+  projName = File.basename(projName)
+  return projName.eql?('ch.elexis.connect.afinion')  ||
+       projName.eql?('ch.elexis.importer.div') ||
+      projName.eql?('ch.elexis.befunde') ||
+      /_ch/.match(projName) != nil
+end
+
+def isIcpcFragmentExample(projName)
+  projName = File.basename(projName)
+  return projName.index('icpc') == 0  ||
+       projName.eql?('ch.elexis.importer.div')
+end
+
+def isWaeltiExample(projName)
+  projName = File.basename(projName)
+  return projName.eql?('Waelti.Statistics')  ||
+      projName.eql?('ch.elexis.scala.runtime') ||
+      projName.eql?('StatisticsFragmentExample')
+end
+
+def pluginsThatShouldWork(projName)
+  projName = File.basename(projName)
+  return false
+end
+
+def pluginsNeededForP2Site(projName)
+  projName = File.basename(projName)
+  return projName.eql?('elexis-switzerland')  ||
+      projName.eql?('ch.elexis.core.feature')
+end
+
+def pluginsThatDontWorkYet(projName)
+  return false if pluginsThatShouldWork(projName)
+@@skipPlugins.each {
+  |x| 
+    if projName.eql?(x.chomp)
+      puts "Skipping #{projName} as defined in #{@@skipName}"
+      return true 
+      end
+}
+  projName = File.basename(projName)
+  return isNotSupportedUnder_2_1_x(projName) 
+end
+
+def shouldIgnoreProject(aProjDir)
+  projName = File.basename(aProjDir)
+  return true if isTestProject(projName)
+  return true if isNotSupportedUnder_2_1_x(projName)
+  return true if pluginsThatDontWorkYet(projName)
+  return false if pluginsThatShouldWork(projName)
+  return false if isPartOfKern(projName)
+  return false if isScalaExample(projName)
+  return false if pluginsNeededForP2Site(projName) and WithP2Site
+  # return false if isWaeltiExample(projName)
+  # return true; # wenn möglichst wenig kompiliert werden soll
+  return false; # wenn alles kompiliert werden soll
+end
+
+
+
+# converts a hash into an LDAP entry which we can use to compare the filter    
+def genEntryFromHash(aHash)
+  entry = Net::LDAP::Entry.new
+  aHash.each{ |name, value| entry["#{name}"] = value}
+  entry
+end
+
+# filter is the Eclipse platform string as seen in a MANIFEST.MF e.g '(& (osgi.os=macosx) (|(osgi.arch=x86)(osgi.arch=x86_64)))')
+# DesiredPlatform is the Hash for the current platform: e.g. {"osgi.os"=>"macosx", "osgi.ws"=>"cocoa", "osgi.arch"=>"x86"}
+def platformFilterMatches(filter, desiredPlatform)
+  f = Net::LDAP::Filter.construct(filter)
+  entry =genEntryFromHash(desiredPlatform)
+  stack = []
+  f.execute{ |op, left, right|
+             stringOp = case op.to_s
+           when 'and' then
+	      a = stack.pop
+	      b = stack.pop
+	      stack.push(a && b)
+           when 'or' then
+	      a = stack.pop
+	      b = stack.pop
+	      stack.push(a || b)
+           when 'equalityMatch' then
+	      stack.push(Net::LDAP::Filter.equals(left, right).match(entry) != nil)
+           else
+             raise "Unsupported compare operation #{op.to_s} #{stringOp}"
+           end
+           }
+#  puts "platformFilterMatches returns #{stack[0]}. stack #{stack.inspect}"
+#  trace "platformFilterMatches returns #{stack[0]}. filter #{filter} for  #{desiredPlatform.inspect}"
+  stack[0]
+end
+
+if $0  == __FILE__
+  require 'test/unit'
+  
+  class Test2 < Test::Unit::TestCase
+    def test_feature
+      example = %(
+      <?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="de.ralfebert.rcputils.feature"
+      label="Eclipse RCP Utilities"
+      version="2.0.2"
+      provider-name="Ralf Ebert">
+
+   <description url="http://github.com/ralfebert/rcputils">
+      Utility classes for Eclipse RCP development
+   </description>
+
+   <license url="http://www.eclipse.org/legal/epl-v10.html">
+      Eclipse Public License - v1.0
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.core.commands"/>
+   </requires>
+
+   <plugin
+         id="de.ralfebert.rcputils"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
+)
+      assert_equal(neededPlugInsFromFeature(example), ['de.ralfebert.rcputils'])
+    end
+  end
+end
+
