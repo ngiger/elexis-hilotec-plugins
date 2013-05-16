@@ -39,20 +39,20 @@ while [ 1 ]
 do
   sleep 0.3
   nrWaits=$[ $nrWaits + 1 ]
-  fuser --silent $watchFile 
+  timeout 1 fuser --silent $watchFile 
   res=$?
   if [ "$nrWaits" -gt "$maxWait" ] || [ $res -eq 0 ] ; then break ; fi
 done
-log2file "After $nrWaits sleeps `basename $watchFile` is open"
+log2file "After $nrWaits sleeps $watchFile is open"
 
 # wait for the lockfile to disappear
 while true
 do
-  fuser --silent $watchFile
+  timeout 1 fuser --silent $watchFile
   if [ $? -gt 0 ] ; then break ; fi
-  sleep 0.3
+  sleep 1
 done
-log2file "`basename $watchFile` went away"
+log2file "$watchFile went away"
 
 exit 0
 # should we use --norestore and/or -o
