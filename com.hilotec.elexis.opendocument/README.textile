@@ -1,6 +1,6 @@
-*Inhaltsverzeichnis Hilotec OpenDocument*
-
 {toc}
+
+*Inhaltsverzeichnis Hilotec OpenDocument*
 
 h2. Allgemeines
 
@@ -11,7 +11,7 @@ ODT-Files und öffnet sie danach mit dem konfigurierten Programm.
 Zusaetzliche Features:
 * Bei Tabellen die durch Platzhalter in ein Dokument ersetzt werden sollen, kann zusaetzlich zum Normalen Platzhalter mit [] eine Tabelle erstellt werden, mit einer Vorlage-Zeile welche in der ersten Spalte den Platzhalter in {} enthält. Dann wird die Zeile kopiert fuer jede einzufuegende Zeile (insbesondere beinhaltet das die Formatierung fuer jede Spalte). Damit lassen sich auch einfach Spaltenbreiten in der Vorlage schon konfigurieren.
 
-* HACK mangels eleganterer Loesung: Text welcher als ganzes (z.B. in einer Tabellenzelle; einzig getesteter Fall ;-)) ins Dokument eingefuegt wird, mit _ am Anfang und Ende wird unterstrichen dargestellt.
+* HACK mangels eleganterer Loesung: Text welcher als ganzes (z.B. in einer Tabellenzelle; einzig getesteter Fall) ins Dokument eingefuegt wird, mit _ am Anfang und Ende wird unterstrichen dargestellt.
 
 Ausgangspunkt für alle Text-Dokumente sind jeweils Text-Vorlagen ("OpenDocument":http://de.wikipedia.org/wiki/OpenDocument Textdateien), welche wie folgt aussehen: 
 

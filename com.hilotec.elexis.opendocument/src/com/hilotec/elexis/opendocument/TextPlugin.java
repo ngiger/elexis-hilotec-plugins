@@ -8,7 +8,10 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,9 +23,11 @@ import javax.xml.xpath.XPathExpressionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -81,6 +86,7 @@ import ch.elexis.util.SWTHelper;
 import ch.rgw.tools.StringTool;
 
 public class TextPlugin implements ITextPlugin {
+	
 	/** Internal Representation of current style */
 	private class Style {
 		final static int ALIGN = SWT.LEFT | SWT.CENTER | SWT.RIGHT;
@@ -245,7 +251,22 @@ public class TextPlugin implements ITextPlugin {
 	private Button open_button;
 	private Button import_button;
 	private static final String pluginID = "com.hilotec.elexis.opendocument";
+	private static final String NoFileOpen = "Dateiname: Keine Datei geöffnet";
+	
 	private Logger logger = LoggerFactory.getLogger(pluginID);
+	static int cnt = 0;
+	
+	private String getTempPrefix(){
+		cnt += 1;
+		StringBuffer sb = new StringBuffer();
+		Patient actPatient = ElexisEventDispatcher.getSelectedPatient();
+		sb.append(cnt + "_" + actPatient.getName() + "_");
+		sb.append(actPatient.getVorname() + "_");
+		DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_S");
+		Date date = new Date();
+		sb.append(dateFormat.format(date));
+		return sb.toString();
+	}
 	
 	private boolean editorRunning(){
 		if (editor_process == null)
@@ -265,6 +286,7 @@ public class TextPlugin implements ITextPlugin {
 		
 		try {
 			odt.save(file);
+			logger.info("odtSync: completed " + file.length() + " saved");
 		} catch (Exception e) {
 			// TODO
 			e.printStackTrace();
@@ -283,20 +305,21 @@ public class TextPlugin implements ITextPlugin {
 			+ actPatient.getName().toString());
 		
 		while (editorRunning()) {
-			logger.info("Editor already opened file" + file.getAbsolutePath());
+			logger.info("Editor already opened file " + file.getAbsolutePath());
 			SWTHelper
 				.showError(
 					"Editor bereits geöffnet",
-					"Es ist bereits ein Editor geöffnet, diesen bitte erst schliessen."
-						+ "Ansonsten werden die dort gemachten Änderungen nicht in der Elexis Datenbank gespeichert.");
-			// TODO: Sollte man hier nicht das Return entfernen?
+					"Es scheint bereits ein Editor geöffnet zu sein für "
+						+ file.getAbsolutePath()
+						+ " geöffnet zu sein.\n\n"
+						+ "Falls Sie sicher sind, dass kein Editor diese Datei mehr offen hat, müssen Sie Elexis neu starten.\n\n"
+						+ "Falls Sie diese Warnung nicht beachten werden die in der Datei gemachten Änderungen nicht in der Elexis Datenbank gespeichert!");
 			return false;
 		}
 		return true;
 	}
 	
 	private void openEditor(){
-		logger.info("openEditor: " + file);
 		if (file == null || !ensureClosed()) {
 			return;
 		}
@@ -317,14 +340,15 @@ public class TextPlugin implements ITextPlugin {
 				"In den Einstellungen wurde kein Editor konfiguriert.");
 			return;
 		}
+		
 		File scriptShell = new File(scriptFile);
 		if (!scriptShell.canExecute())
 			scriptShell.setExecutable(true);
 		String args = (scriptFile + "\n" + editor + "\n" + argstr + "\n" + file.getAbsolutePath());
 		Patient actPatient = ElexisEventDispatcher.getSelectedPatient();
-		logger.info("openEditor: " + actPatient.getVorname() + " "
-			+ actPatient.getName().toString() + "\n" + args);
+		logger.info("openEditor: " + actPatient.getPersonalia() + "\n" + args);
 		ProcessBuilder pb = new ProcessBuilder(args.split("\n"));
+		filename_label.setText(file.getAbsolutePath());
 		
 		try {
 			editor_process = pb.start();
@@ -341,6 +365,12 @@ public class TextPlugin implements ITextPlugin {
 						e.printStackTrace();
 					} finally {
 						editor_process = null;
+						Display.getDefault().asyncExec(new Runnable() {
+							public void run(){
+								filename_label.setText(NoFileOpen);
+								logger.info("openEditor: updated filename_label");
+							}
+						});
 					}
 				}
 			}).start();
@@ -395,6 +425,7 @@ public class TextPlugin implements ITextPlugin {
 			editor_process = pb.start();
 			editor_process.waitFor();
 			logger.info("print waitFor done: " + args);
+			filename_label.setText(NoFileOpen);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -406,31 +437,39 @@ public class TextPlugin implements ITextPlugin {
 	
 	@Override
 	public Composite createContainer(Composite parent, ICallback handler){
+		logger.info("createContainer: ");
 		if (comp == null) {
 			comp = new Composite(parent, SWT.NONE);
-			comp.setLayout(new GridLayout());
-			comp.setLayoutData(SWTHelper.getFillGridData(1, true, 1, true));
+			RowLayout layout = new RowLayout(SWT.VERTICAL);
+			layout.wrap = true;
+			layout.fill = false;
+			layout.justify = false;
+			comp.setLayout(layout);
 			
-			Label fn_label = new Label(comp, SWT.NONE);
-			fn_label.setText("Dateiname:");
-			filename_label = new Label(comp, SWT.NONE);
-			
-			new Label(comp, SWT.NONE);
-			open_button = new Button(parent, SWT.PUSH);
-			open_button.setText("Editor Öffnen");
+			RowData data = new RowData();
+			filename_label = new Label(comp, SWT.PUSH);
+			filename_label.setText(NoFileOpen);
+			filename_label.setLayoutData(data);
+			data.width = 400;
+			open_button = new Button(comp, SWT.PUSH);
+			open_button.setText("Editor öffnen");
 			open_button.addListener(SWT.Selection, new Listener() {
 				public void handleEvent(Event event){
 					openEditor();
 				}
 			});
-			
-			import_button = new Button(parent, SWT.PUSH);
-			import_button.setText("Datei Importieren");
+			data = new RowData();
+			open_button.setLayoutData(data);
+			import_button = new Button(comp, SWT.PUSH);
+			import_button.setText("Datei importieren");
 			import_button.addListener(SWT.Selection, new Listener() {
 				public void handleEvent(Event event){
 					importFile();
 				}
 			});
+			import_button.setLayoutData(data);
+			
+			comp.pack();
 			/* open_button.setEnabled(false); */
 		}
 		
@@ -439,14 +478,12 @@ public class TextPlugin implements ITextPlugin {
 	
 	private void fileValid(){
 		open_button.setEnabled(true);
-		filename_label.setText(file.getAbsolutePath());
 		curStyle = new Style();
 	}
 	
 	@Override
 	public void dispose(){
-		// System.out.println("dispose()");
-		// TODO Auto-generated method stub
+		logger.info("dispose: ");
 		
 	}
 	
@@ -460,14 +497,14 @@ public class TextPlugin implements ITextPlugin {
 	
 	@Override
 	public boolean clear(){
-		// System.out.println("clear()");
+		logger.info("clear: ");
 		SWTHelper.showError("TODO", "TODO: clear()");
 		return false;
 	}
 	
 	@Override
 	public boolean createEmptyDocument(){
-		// System.out.println("createEmptyDocument()");
+		logger.info("createEmptyDocument: ");
 		if (!ensureClosed()) {
 			return false;
 		}
@@ -477,7 +514,7 @@ public class TextPlugin implements ITextPlugin {
 		}
 		
 		try {
-			file = File.createTempFile("elexis_", ".odt");
+			file = File.createTempFile(getTempPrefix(), ".odt");
 			file.deleteOnExit();
 			
 			logger.info("createEmptyDocument: " + file.toString());
@@ -504,7 +541,8 @@ public class TextPlugin implements ITextPlugin {
 			return null;
 		try {
 			odt.save(stream);
-			logger.info("storeToByteArray: completed");
+			logger.info("storeToByteArray: completed " + file.length() + " bytes will open editor");
+			openEditor();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -522,7 +560,7 @@ public class TextPlugin implements ITextPlugin {
 	
 	@Override
 	public boolean loadFromStream(InputStream is, boolean asTemplate){
-		// System.out.println("loadFromStream()");
+		logger.info("loadFromStream: " + (file != null));
 		if (!ensureClosed()) {
 			return false;
 		}
@@ -532,7 +570,7 @@ public class TextPlugin implements ITextPlugin {
 		}
 		
 		try {
-			file = File.createTempFile("elexis_", ".odt");
+			file = File.createTempFile(getTempPrefix(), ".odt");
 			logger.info("loadFromStream: " + file.toString());
 			file.deleteOnExit();
 			
@@ -542,6 +580,7 @@ public class TextPlugin implements ITextPlugin {
 			logger.info("loadFromStream: saved (but not yet converted) " + file.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
+			logger.info("loadFromStream: loading document failed ");
 			return false;
 		}
 		
